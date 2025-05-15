@@ -4,6 +4,8 @@ set -e
 # Install Rust
 bash ./src/install_rust.sh
 
+export PATH="$HOME/.cargo/bin:$PATH"
+
 # Verify installation
 source ~/.bashrc
 if command -v rustc >/dev/null 2>&1; then
