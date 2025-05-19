@@ -26,3 +26,30 @@ else
   exit 1
 fi
 
+# Intall zsh
+bash ./src/zsh/zshInstall.sh
+export PATH="$HOME/.local/bin:$PATH"
+source $HOME/.bashrc
+
+# Verify installation
+if command -v zsh >/dev/null 2>&1; then
+  zsh --version
+  echo "✅ zsh successfully installed."
+else
+  echo "❌ zsh not found after install."
+  exit 1
+fi
+
+# Uninstall zsh
+bash ./src/zsh/zshUninstall.sh
+source $HOME/.bashrc
+
+# Verify uninstallation
+if [ ! -d "$HOME/.oh-my-zsh" ] && [ ! -d "$HOME/.local/bin/zsh" ]; then
+  echo "✅ zsh successfully uninstalled."
+else
+  echo "❌ zsh files still exist after uninstall."
+  exit 1
+fi
+
+
