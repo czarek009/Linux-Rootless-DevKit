@@ -1,13 +1,24 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -Eu
 
-# Install Rust
-bash ./src/install_rust.sh
+# Get the directory of this script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_TOP_DIR="${SCRIPT_DIR}"
 
-export PATH="$HOME/.cargo/bin:$PATH"
+# Source rust install file
+RUST_INSTALL_PATH="${PROJECT_TOP_DIR}/src/install_rust.sh"
+if [[ -f "${RUST_INSTALL_PATH}" ]]; then
+    source "${RUST_INSTALL_PATH}"
+else
+    echo "Error: Could not find install_rust.sh at ${RUST_INSTALL_PATH}"
+    exit 1
+fi
+
+# Install rust
+install_rust || exit 1
 
 # Verify installation
-source ~/.bashrc
+source $HOME/.bashrc
 if command -v rustc >/dev/null 2>&1; then
   rustc --version
 else
@@ -15,8 +26,17 @@ else
   exit 1
 fi
 
+# Source rust uninstall file
+RUST_UNINSTALL_PATH="${PROJECT_TOP_DIR}/src/uninstall_rust.sh"
+if [[ -f "${RUST_UNINSTALL_PATH}" ]]; then
+    source "${RUST_UNINSTALL_PATH}"
+else
+    echo "Error: Could not find uninstall_rust.sh at ${RUST_UNINSTALL_PATH}"
+    exit 1
+fi
+
 # Uninstall Rust
-bash ./src/uninstall_rust.sh
+uninstall_rust || exit 1
 
 # Verify uninstallation
 if [ ! -d "$HOME/.cargo" ] && [ ! -d "$HOME/.rustup" ]; then
