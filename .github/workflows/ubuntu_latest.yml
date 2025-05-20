@@ -1,4 +1,4 @@
-name: Example
+name: Ubuntu environment test
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,5 +16,5 @@ jobs:
 
     - name: Build and run Docker container
       run: |
-        docker build -t test-image .
-        docker run --rm test-image
+        docker build -f test/docker/Dockerfile_ubuntu_latest -t ubuntu_latest-image .
+        docker run --rm ubuntu_latest-image
