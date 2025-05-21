@@ -10,9 +10,9 @@ remove_dirs() {
 clean_bashrc() {
 	local profile_file="$HOME/.bashrc.user"
 	sed -i '/^# Go environment setup$/d' "$profile_file"
-	sed -i '/^unset -f go$/d' "$profile_file"
-	sed -i '/^export GOROOT="\/home\/ewozseb\/.local\/go"$/d' -i "$profile_file"
-	sed -i '/^export GOPATH="\/home\/ewozseb\/go"$/d' -i "$profile_file"
+	sed -i '/^unset -f go 2> \/dev\/null$/d ' "$profile_file"
+  sed -i "/^export GOROOT=\"$(echo "$HOME" | sed 's_/_\\/_g')\/.local\/go\"$/d" "$profile_file"
+  sed -i "/^export GOPATH=\"$(echo "$HOME" | sed 's_/_\\/_g')\/go\"$/d" "$profile_file"
 	sed -i '/^export PATH="\$GOROOT\/bin:\$GOPATH\/bin:\$PATH"$/d' -i "$profile_file"
 
 	echo "Go environment lines removed from $profile_file."

@@ -80,7 +80,7 @@ fi
 # Uninstall Rust with shell config file as an argument
 Rust::uninstall ${SHELLRC_PATH} || exit 1
 
-# Verify uninstallation
+# Verify Rust uninstallation
 if [ ! -d "$HOME/.cargo" ] && [ ! -d "$HOME/.rustup" ]; then
   echo "✅ Rust successfully uninstalled."
 else
@@ -114,4 +114,25 @@ else
   exit 1
 fi
 
+# Install Go
+bash ./src/go_install.sh
+source ~/.bashrc.user
 
+# Verify Go installation
+if command -v go >/dev/null 2>&1; then
+  go version
+else
+  echo "❌ Go not found after install."
+  exit 1
+fi
+
+# Uninstall Go
+bash ./src/go_uninstall.sh
+
+# Verify Go uninstallation
+if [ ! -d "$HOME/go" ] && [ ! -d "$HOME/.local/go" ]; then
+  echo "✅ Go successfully uninstalled."
+else
+  echo "❌ Go files still exist after uninstall."
+  exit 1
+fi

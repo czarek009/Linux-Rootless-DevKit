@@ -25,7 +25,7 @@ install() {
 	{
 		echo ""
 		echo "# Go environment setup"
-		echo "unset -f go"
+		echo "unset -f go 2> /dev/null"
 		echo "export GOROOT=\"$goroot\""
 		echo "export GOPATH=\"$gopath\""
 		echo "export PATH=\"\$GOROOT/bin:\$GOPATH/bin:\$PATH\""
