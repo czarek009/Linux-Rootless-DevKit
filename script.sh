@@ -68,6 +68,38 @@ else
   exit 1
 fi
 
+# Source Rust Cli tools install file
+RUST_TOOLS_INSTALL_PATH="${PROJECT_TOP_DIR}/src/install_rust_cli_tools.sh"
+if [[ -f "${RUST_TOOLS_INSTALL_PATH}" ]]; then
+    source "${RUST_TOOLS_INSTALL_PATH}"
+else
+    echo "Error: Could not find install_rust_cli_tools.sh at ${RUST_TOOLS_INSTALL_PATH}"
+    exit 1
+fi
+
+# Install all defined rust tools
+RustCli::install_all_tools || exit 1
+
+# Verify installation of rust tools
+source $HOME/.bashrc
+RustCli::verify_installed || exit 1
+
+# Source Rust Cli tools uninstall file
+RUST_TOOLS_UNINSTALL_PATH="${PROJECT_TOP_DIR}/src/uninstall_rust_cli_tools.sh"
+if [[ -f "${RUST_TOOLS_UNINSTALL_PATH}" ]]; then
+    source "${RUST_TOOLS_UNINSTALL_PATH}"
+else
+    echo "Error: Could not find uninstall_rust_cli_tools.sh at ${RUST_TOOLS_UNINSTALL_PATH}"
+    exit 1
+fi
+
+# Uninstall all defined rust tools
+RustCli::uninstall_all_tools || exit 1
+
+# Verify uninstallation of rust tools
+source $HOME/.bashrc
+RustCli::verify_uninstalled || exit 1
+
 # Source rust uninstall file
 RUST_UNINSTALL_PATH="${PROJECT_TOP_DIR}/src/uninstall_rust.sh"
 if [[ -f "${RUST_UNINSTALL_PATH}" ]]; then
