@@ -24,6 +24,7 @@ RustCli::install_tool() {
         echo "Failed to install $tool_name. See log:"
         cat "$temp_log" >&2
         rm -f "$temp_log"
+	return 1
     fi
 }
 
@@ -71,6 +72,7 @@ RustCli::verify_installed() {
             echo "$tool_name is successfully installed"
         else
             echo "$tool_name is not installed"
+	    return 1
         fi
     done
 }
