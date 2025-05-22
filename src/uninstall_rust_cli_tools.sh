@@ -21,6 +21,7 @@ RustCli::uninstall_tool() {
         echo "Failed to uninstall $crate_name. See log:"
         cat "$temp_log" >&2
         rm -f "$temp_log"
+	return 1
     fi
 }
 
@@ -66,6 +67,7 @@ RustCli::verify_uninstalled() {
         read -r tool_name binary _ <<< "$(RustCli::parse_tool_entry "$entry")"
         if command -v "$binary" >/dev/null 2>&1 | cargo install --list | grep -q "^$tool_name v"; then
             echo "$tool_name still exist after uninstall"
+	    return 1
         else
             echo "$tool_name successfully uninstalled"
         fi
