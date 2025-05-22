@@ -46,7 +46,7 @@ RustCli::install_all_tools() {
 
     for entry in "${RUST_CLI_TOOLS[@]}"; do
         read -r tool_name binary flags <<< "$(RustCli::parse_tool_entry "$entry")"
-        RustCli::install_tool "$tool_name" "$binary" "$flags"
+        RustCli::install_tool "$tool_name" "$binary" "$flags" || exit 1
     done
 }
 
