@@ -2,9 +2,10 @@ name: Ubuntu environment test
 
 on:
   push:
-    branches: [ main ]
+    branches: 
+      - '**'   # Matches all branches on push
   pull_request:
-    branches: [ main ]
+    branches: [ main, development ]
 
 jobs:
   test:
