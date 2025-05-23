@@ -10,5 +10,7 @@ RUN chmod +x src/install_rust.sh src/uninstall_rust.sh script.sh
 
 RUN chmod +x src/zsh/zshUninstall.sh src/zsh/zshInstall.sh
 
+RUN chmod +x src/scriptLogger/scriptLogger.sh
+
 CMD ["bash", "-l", "-i", "./script.sh"]
 
