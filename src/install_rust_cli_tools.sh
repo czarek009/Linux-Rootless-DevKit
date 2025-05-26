@@ -6,6 +6,7 @@ RustCli::install_tool() {
     local tool_name="$1"
     local command_name="$2"
     local install_flags="$3"
+    local shell_init="$4"
     local temp_log
     temp_log=$(mktemp)
 
@@ -20,6 +21,16 @@ RustCli::install_tool() {
     if cargo install $install_flags "$tool_name" >"$temp_log" 2>&1; then
         echo "$tool_name installed successfully"
         rm -f "$temp_log"
+
+	# Inject shell init into ~/.bashrc if defined for tool and not already present
+        if [[ -n "$shell_init" ]]; then
+            if ! grep -Fxq "$shell_init" "$HOME/.bashrc"; then
+                echo "[*] Adding shell init for $tool_name to .bashrc"
+                echo "$shell_init" >> "$HOME/.bashrc"
+            else
+                echo "[*] Shell init for $tool_name already present"
+            fi
+        fi
     else
         echo "Failed to install $tool_name. See log:"
         cat "$temp_log" >&2
@@ -45,8 +56,8 @@ RustCli::install_all_tools() {
     RustCli::check_cargo_available || exit 1
 
     for entry in "${RUST_CLI_TOOLS[@]}"; do
-        read -r tool_name binary flags <<< "$(RustCli::parse_tool_entry "$entry")"
-        RustCli::install_tool "$tool_name" "$binary" "$flags" || exit 1
+        read -r tool_name binary flags shell_init <<< "$(RustCli::parse_tool_entry "$entry")"
+        RustCli::install_tool "$tool_name" "$binary" "$flags" "$shell_init" || exit 1
     done
 }
 
@@ -66,7 +77,7 @@ RustCli::verify_installed() {
 
     echo "Verifying installed Rust CLI tools:"
     for entry in "${RUST_CLI_TOOLS[@]}"; do
-        read -r tool_name binary _ <<< "$(RustCli::parse_tool_entry "$entry")"
+        read -r tool_name binary _ _ <<< "$(RustCli::parse_tool_entry "$entry")"
 
         if command -v "$binary" &>/dev/null; then
             echo "$tool_name is successfully installed"

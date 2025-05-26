@@ -4,6 +4,7 @@
 RustCli::uninstall_tool() {
     local crate_name="$1"
     local command_name="$2"
+    local shell_init="$3"
     local temp_log
     temp_log=$(mktemp)
 
@@ -17,6 +18,15 @@ RustCli::uninstall_tool() {
     if cargo uninstall "$crate_name" >"$temp_log" 2>&1; then
         echo "$crate_name uninstalled successfully"
         rm -f "$temp_log"
+
+	# Remove shell init line from ~/.bashrc if it was added for a tool
+        if [[ -n "$shell_init" ]]; then
+            if grep -Fxq "$shell_init" "$HOME/.bashrc"; then
+                echo "[*] Removing shell init for $crate_name from .bashrc"
+                # Safely delete the exact line
+                sed -i.bak "\|$shell_init|d" "$HOME/.bashrc"
+            fi
+        fi
     else
         echo "Failed to uninstall $crate_name. See log:"
         cat "$temp_log" >&2
@@ -42,8 +52,8 @@ RustCli::uninstall_all_tools() {
     RustCli::check_cargo_available | exit 1
     
     for entry in "${RUST_CLI_TOOLS[@]}"; do
-        read -r tool_name binary _ <<< "$(RustCli::parse_tool_entry "$entry")"
-        RustCli::uninstall_tool "$tool_name" "$binary"
+        read -r tool_name binary _ shell_init <<< "$(RustCli::parse_tool_entry "$entry")"
+        RustCli::uninstall_tool "$tool_name" "$binary" "$shell_init"
     done
 }
 
@@ -64,7 +74,7 @@ RustCli::verify_uninstalled() {
     # Verify defined rust tools
     echo "Verifying uninstallation of Rust CLI tools:"
     for entry in "${RUST_CLI_TOOLS[@]}"; do
-        read -r tool_name binary _ <<< "$(RustCli::parse_tool_entry "$entry")"
+        read -r tool_name binary _ _ <<< "$(RustCli::parse_tool_entry "$entry")"
         if command -v "$binary" >/dev/null 2>&1 | cargo install --list | grep -q "^$tool_name v"; then
             echo "$tool_name still exist after uninstall"
 	    return 1
