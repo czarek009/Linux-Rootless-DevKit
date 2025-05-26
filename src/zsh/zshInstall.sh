@@ -59,18 +59,20 @@ source $HOME/.bashrc
 
 # Set zsh as default:
 ZSH_BIN="$INSTALL_DIR/bin/zsh"
-if ! grep -q "$ZSH_BIN" "$HOME/.bashrc"; then
-    {
-        echo "
-# Start zsh if available
-if [ -x \"$ZSH_BIN\" ] && [ \"\$SHELL\" != \"$ZSH_BIN\" ]; then
-    #export SHELL=\"$HOME/.local/bin/zsh\"
-    exec \"$ZSH_BIN\"
-fi" >> "$HOME/.bashrc"
-    } >> "$HOME/.bashrc"
-fi
+# TODO: Implement a way to set ZSH as default shell
+# if ! grep -q "$ZSH_BIN" "$HOME/.bashrc"; then
+#     {
+#         echo "
+# # Start zsh if available
+# if [ -x \"$ZSH_BIN\" ] && [ \"\$SHELL\" != \"$ZSH_BIN\" ]; then
+#     #export SHELL=\"$HOME/.local/bin/zsh\"
+#     exec \"$ZSH_BIN\"
+# fi" >> "$HOME/.bashrc"
+#     } >> "$HOME/.bashrc"
+# fi
 
-source $HOME/.bashrc
+# source $HOME/.bashrc
+
 
 # Install oh-my-zsh
 export RUNZSH=no
