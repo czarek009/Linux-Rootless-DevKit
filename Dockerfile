@@ -1,7 +1,7 @@
 FROM ubuntu:latest
 
 RUN apt-get -q update && apt-get upgrade -y && \
-    apt-get install -y -qq curl bash ca-certificates xz-utils git make gcc fontconfig libncurses-dev
+    apt-get install -y -qq curl bash ca-certificates xz-utils git make gcc fontconfig libncurses-dev g++ cmake
 
 COPY . /app
 WORKDIR /app
