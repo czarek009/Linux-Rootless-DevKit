@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 
 # Format: "tool_name:binary_name[:extra_flags][:shell_init]"
+# Using format tool_name:binary_name::shell_init (not using flags but using shell_init) 
+#   might cause a failure becasue of passing some part of shell_init into flags.
 RUST_CLI_TOOLS=(
-    "du-dust:dust"
-    "tealdeer:tldr"
-    "ripgrep:rg"
+    "du-dust:dust:--locked"
+    "tealdeer:tldr:--locked"
+    "ripgrep:rg:--locked"
     "gitui:gitui:--locked"
-    "git-delta:delta"
-    "atuin:atuin::eval \"\$(atuin init bash --disable-up-arrow)\""
-    "eza:eza"
-    "tokei:tokei"
-    "procs:procs"
-    #"zoxide:zoxide::eval \"\$(zoxide init bash)\""
+    "git-delta:delta:--locked"
+    "atuin:atuin:--locked:eval \"\$(atuin init bash --disable-up-arrow)\""
+    "eza:eza:--locked"
+    "tokei:tokei:--locked"
+    "procs:procs:--locked"
+    #"zoxide:zoxide:--locked:eval \"\$(zoxide init bash)\""
 )
 
 # Get tool name, binary, and optional flags
