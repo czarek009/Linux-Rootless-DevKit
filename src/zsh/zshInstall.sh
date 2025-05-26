@@ -73,6 +73,7 @@ ZSH_BIN="$INSTALL_DIR/bin/zsh"
 
 # source $HOME/.bashrc
 
+
 # Install oh-my-zsh
 export RUNZSH=no
 export ZSH="$HOME/.oh-my-zsh"
