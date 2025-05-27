@@ -21,13 +21,15 @@ RustCli::install_tool() {
     if cargo install $install_flags "$tool_name" >"$temp_log" 2>&1; then
         echo "$tool_name installed successfully"
         rm -f "$temp_log"
-
+	
 	# Inject shell init into ~/.bashrc if defined for tool and not already present
         if [[ -n "$shell_init" ]]; then
-            if ! grep -Fxq "$shell_init" "$HOME/.bashrc"; then
-                echo "[*] Adding shell init for $tool_name to .bashrc"
-                echo "$shell_init" >> "$HOME/.bashrc"
-            else
+            # Safely append to ~/.bashrc with interactive shell check
+            shell_safe="if [ -t 1 ] && [[ \$- == *i* ]]; then $shell_init; fi"
+            if ! grep -Fq "$shell_safe" $HOME/.bashrc; then
+                echo "[*] Adding shell init for $tool_name to ~/.bashrc"
+                    echo "$shell_safe" >> $HOME/.bashrc
+	    else
                 echo "[*] Shell init for $tool_name already present"
             fi
         fi

@@ -18,14 +18,18 @@ RustCli::uninstall_tool() {
     if cargo uninstall "$crate_name" >"$temp_log" 2>&1; then
         echo "$crate_name uninstalled successfully"
         rm -f "$temp_log"
-
-	# Remove shell init line from ~/.bashrc if it was added for a tool
-        if [[ -n "$shell_init" ]]; then
-            if grep -Fxq "$shell_init" "$HOME/.bashrc"; then
-                echo "[*] Removing shell init for $crate_name from .bashrc"
-                # Safely delete the exact line
-                sed -i.bak "\|$shell_init|d" "$HOME/.bashrc"
-            fi
+	
+	if [[ -n "$shell_init" ]]; then
+            echo "[*] Removing shell init for $crate_name from .bashrc"
+	    
+	    # Escape special characters for use in sed
+	    escaped_shell_init=$(printf '%s\n' "$shell_init" | sed -e 's/[]\/$*.^[]/\\&/g')
+	    
+	    # Remove the entire block if it contains the shell_init line
+	    sed -i.bak -e "/if \[ -t 1 \] && \[\[ \$- == \*i\* \]\]; then/,/fi/ {
+	    	/$escaped_shell_init/!b
+	    	d
+    	    }" ~/.bashrc
         fi
     else
         echo "Failed to uninstall $crate_name. See log:"
