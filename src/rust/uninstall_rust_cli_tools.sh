@@ -2,25 +2,26 @@
 
 # Uninstall a single Rust CLI tool if installed
 Rust::Cli::uninstall_tool() {
-    local crate_name="$1"
-    local command_name="$2"
-    local shell_init="$3"
+    local shellrc_path="$1"
+    local tool_name="$2"
+    local command_name="$3"
+    local shell_init="$4"
     local temp_log
     temp_log=$(mktemp)
 
     # Skip not present tools
-    if ! cargo install --list | grep -q "^$crate_name v"; then
+    if ! cargo install --list | grep -q "^$tool_name v"; then
         return 0
     fi
 
-    echo "[*] Uninstalling $crate_name..."
+    echo "[*] Uninstalling $tool_name..."
 
-    if cargo uninstall "$crate_name" >"$temp_log" 2>&1; then
-        echo "$crate_name uninstalled successfully"
+    if cargo uninstall "$tool_name" >"$temp_log" 2>&1; then
+        echo "$tool_name uninstalled successfully"
         rm -f "$temp_log"
 	
 	if [[ -n "$shell_init" ]]; then
-            echo "[*] Removing shell init for $crate_name from .bashrc"
+            echo "[*] Removing shell init for $tool_name from shellrc file"
 	    
 	    # Escape special characters for use in sed
 	    escaped_shell_init=$(printf '%s\n' "$shell_init" | sed -e 's/[]\/$*.^[]/\\&/g')
@@ -29,10 +30,10 @@ Rust::Cli::uninstall_tool() {
 	    sed -i.bak -e "/if \[ -t 1 \] && \[\[ \$- == \*i\* \]\]; then/,/fi/ {
 	    	/$escaped_shell_init/!b
 	    	d
-    	    }" ~/.bashrc
+    	    }" $shellrc_path
         fi
     else
-        echo "Failed to uninstall $crate_name. See log:"
+        echo "Failed to uninstall $tool_name. See log:"
         cat "$temp_log" >&2
         rm -f "$temp_log"
 	return 1
@@ -41,6 +42,8 @@ Rust::Cli::uninstall_tool() {
 
 # Uninstall all desired Rust CLI tools
 Rust::Cli::uninstall_all_tools() {
+    local shellrc_path="$1"
+
     # Get the directory of the current script
     local SCRIPT_CURR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local RUST_TOOLS_UTILS_PATH="${SCRIPT_CURR_DIR}/rust_tools_utils.sh"
@@ -57,7 +60,7 @@ Rust::Cli::uninstall_all_tools() {
     
     for entry in "${RUST_CLI_TOOLS[@]}"; do
         read -r tool_name binary _ shell_init <<< "$(Rust::Cli::parse_tool_entry "$entry")"
-        Rust::Cli::uninstall_tool "$tool_name" "$binary" "$shell_init"
+        Rust::Cli::uninstall_tool "$shellrc_path" "$tool_name" "$binary" "$shell_init"
     done
 }
 

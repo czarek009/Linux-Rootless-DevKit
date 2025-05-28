@@ -77,12 +77,12 @@ else
     exit 1
 fi
 
-# Install all defined rust tools
-RustCli::install_all_tools || exit 1
+# Install all defined rust tools with shell config file as an argument
+Rust::Cli::install_all_tools ${SHELLRC_PATH} || exit 1
 
 # Verify installation of rust tools
 source ${SHELLRC_PATH}
-RustCli::verify_installed || exit 1
+Rust::Cli::verify_installed || exit 1
 
 # Source Rust Cli tools uninstall file
 RUST_TOOLS_UNINSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/uninstall_rust_cli_tools.sh"
@@ -93,12 +93,12 @@ else
     exit 1
 fi
 
-# Uninstall all defined rust tools
-RustCli::uninstall_all_tools || exit 1
+# Uninstall all defined rust tools with shell config file as an argument
+Rust::Cli::uninstall_all_tools ${SHELLRC_PATH} || exit 1
 
 # Verify uninstallation of rust tools
 source ${SHELLRC_PATH}
-RustCli::verify_uninstalled || exit 1
+Rust::Cli::verify_uninstalled || exit 1
 
 # Source rust uninstall file
 RUST_UNINSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/uninstall_rust.sh"

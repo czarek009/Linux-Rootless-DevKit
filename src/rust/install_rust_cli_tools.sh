@@ -3,10 +3,11 @@
 
 # Install a single Rust CLI tool if not already installed
 Rust::Cli::install_tool() {
-    local tool_name="$1"
-    local command_name="$2"
-    local install_flags="$3"
-    local shell_init="$4"
+    local shellrc_path="$1"
+    local tool_name="$2"
+    local command_name="$3"
+    local install_flags="$4"
+    local shell_init="$5"
     local temp_log
     temp_log=$(mktemp)
 
@@ -22,13 +23,14 @@ Rust::Cli::install_tool() {
         echo "$tool_name installed successfully"
         rm -f "$temp_log"
 	
-	# Inject shell init into ~/.bashrc if defined for tool and not already present
+	# Inject shell init into shellrc file if defined for tool and not already present
         if [[ -n "$shell_init" ]]; then
-            # Safely append to ~/.bashrc with interactive shell check
+            # Safely append to shellrc file with interactive shell check
             shell_safe="if [ -t 1 ] && [[ \$- == *i* ]]; then $shell_init; fi"
-            if ! grep -Fq "$shell_safe" $HOME/.bashrc; then
-                echo "[*] Adding shell init for $tool_name to ~/.bashrc"
-                    echo "$shell_safe" >> $HOME/.bashrc
+            
+	    if ! grep -Fq "$shell_safe" $shellrc_path; then
+                echo "[*] Adding shell init for $tool_name to $shellrc_path"
+                    echo "$shell_safe" >> $shellrc_path
 	    else
                 echo "[*] Shell init for $tool_name already present"
             fi
@@ -43,6 +45,8 @@ Rust::Cli::install_tool() {
 
 # Install all desired Rust CLI tools
 Rust::Cli::install_all_tools() {
+    local shellrc_path="$1"
+    
     # Get the directory of the current script
     local SCRIPT_CURR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local RUST_TOOLS_UTILS_PATH="${SCRIPT_CURR_DIR}/rust_tools_utils.sh"
@@ -59,7 +63,7 @@ Rust::Cli::install_all_tools() {
 
     for entry in "${RUST_CLI_TOOLS[@]}"; do
         read -r tool_name binary flags shell_init <<< "$(Rust::Cli::parse_tool_entry "$entry")"
-        Rust::Cli::install_tool "$tool_name" "$binary" "$flags" "$shell_init" || exit 1
+        Rust::Cli::install_tool "$shellrc_path" "$tool_name" "$binary" "$flags" "$shell_init" || exit 1
     done
 }
 
