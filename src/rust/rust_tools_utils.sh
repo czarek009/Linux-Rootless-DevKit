@@ -17,14 +17,14 @@ RUST_CLI_TOOLS=(
 )
 
 # Get tool name, binary, and optional flags
-RustCli::parse_tool_entry() {
+Rust::Cli::parse_tool_entry() {
     local entry="$1"
     IFS=":" read -r tool_name binary flags shell_init <<< "$entry"
     echo "$tool_name" "$binary" "$flags" "$shell_init"
 }
 
 # Check if cargo is available
-RustCli::check_cargo_available() {
+Rust::Cli::check_cargo_available() {
     if ! command -v cargo >/dev/null 2>&1; then
         echo "Error: 'cargo' is not available. Please install Rust first."
         exit 1
