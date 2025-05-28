@@ -1,5 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
+
+# Parameter for setting shell config file that will be used by a user (bashrc/zshrc)
+# TODO: Needs to be modifiable by the initial script configuration.
+SHELLRC_PATH="$HOME/.bashrc"
 
 # Run logger test sequence:
 echo "ℹ️ Running logger test sequence..."
@@ -39,14 +43,24 @@ logger_check_str "loggerTest" "Command 'thiscommanddoesnotexist' does not exist"
 logger_check_str "testTraps" "Script interrupted by user"
 rm -r "$TEST_LOG_DIR"
 
+# Get the directory of this script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_TOP_DIR="${SCRIPT_DIR}"
 
-# Install Rust
-bash ./src/install_rust.sh
+# Source rust install file
+RUST_INSTALL_PATH="${PROJECT_TOP_DIR}/src/install_rust.sh"
+if [[ -f "${RUST_INSTALL_PATH}" ]]; then
+    source "${RUST_INSTALL_PATH}"
+else
+    echo "Error: Could not find install_rust.sh at ${RUST_INSTALL_PATH}"
+    exit 1
+fi
 
-export PATH="$HOME/.cargo/bin:$PATH"
+# Install rust with shell config file as an argument
+Rust::install ${SHELLRC_PATH} || exit 1
 
 # Verify installation
-source ~/.bashrc
+source ${SHELLRC_PATH}
 if command -v rustc >/dev/null 2>&1; then
   rustc --version
 else
@@ -54,8 +68,17 @@ else
   exit 1
 fi
 
-# Uninstall Rust
-bash ./src/uninstall_rust.sh
+# Source rust uninstall file
+RUST_UNINSTALL_PATH="${PROJECT_TOP_DIR}/src/uninstall_rust.sh"
+if [[ -f "${RUST_UNINSTALL_PATH}" ]]; then
+    source "${RUST_UNINSTALL_PATH}"
+else
+    echo "Error: Could not find uninstall_rust.sh at ${RUST_UNINSTALL_PATH}"
+    exit 1
+fi
+
+# Uninstall Rust with shell config file as an argument
+Rust::uninstall ${SHELLRC_PATH} || exit 1
 
 # Verify uninstallation
 if [ ! -d "$HOME/.cargo" ] && [ ! -d "$HOME/.rustup" ]; then

@@ -1,56 +1,39 @@
-#!/bin/bash
- 
-# Quiet custom install of Rust using rustup with specific options
- 
- 
-# Define colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
- 
-# Set environment variables to avoid path check warning
-export RUSTUP_INIT_SKIP_PATH_CHECK=yes
- 
-# Download rustup-init
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o rustup-init.sh
- 
-if [ $? -ne 0 ]; then
-    echo -e "${RED}❌ ${NC}Failed to download rustup-init."
-    exit 1
-fi
- 
-chmod +x rustup-init.sh
- 
-# Run rustup-init in quiet mode with custom options
-./rustup-init.sh -y \
-    --default-toolchain stable \
-    --profile default \
-    --no-modify-path > /dev/null 2>&1
- 
-INSTALL_STATUS=$?
- 
-# Clean up installer
-rm -f rustup-init.sh
- 
-# Add cargo to PATH in .bashrc if not already present
-BASHRC="$HOME/.bashrc"
-CARGO_LINE='export PATH="$HOME/.cargo/bin:$PATH"'
- 
-if [ $INSTALL_STATUS -eq 0 ]; then
-    if [ -w "$BASHRC" ]; then
-        if ! grep -Fxq "$CARGO_LINE" "$BASHRC"; then
-            echo "$CARGO_LINE" >> "$BASHRC"
+#!/usr/bin/env bash
+
+# Rust installation function
+
+Rust::install() {
+    local rustup_url="https://sh.rustup.rs"
+    local rustup_init="rustup-init.sh"
+    local shellrc_path=$1
+    local cargo_path_line='export PATH="$HOME/.cargo/bin:$PATH"'
+    local temp_log
+    temp_log=$(mktemp)
+
+    echo "[*] Downloading rustup-init from $rustup_url"
+
+    curl --proto '=https' --tlsv1.2 -sSf "$rustup_url" -o "$rustup_init" && chmod +x "$rustup_init"
+
+    echo "[*] Installing Rust"
+
+    if RUSTUP_INIT_SKIP_PATH_CHECK=yes ./"$rustup_init" -y \
+        --default-toolchain stable \
+        --profile default \
+        --no-modify-path >"$temp_log" 2>&1; then
+
+        rm -f "$rustup_init" "$temp_log"
+
+        if [ -w "$shellrc_path" ] && ! grep -Fxq "$cargo_path_line" "$shellrc_path"; then
+            echo "$cargo_path_line" >> "$shellrc_path"
         fi
-        echo -e "${GREEN}✔ ${NC}Rust was successfully installed to \$HOME/.cargo/bin"
-        echo -e "${BLUE}ℹ️  ${NC}Cargo path added to $BASHRC"
+
+        echo "Rust successfully installed."
+        return 0
     else
-        echo -e "${GREEN}✔ ${NC}Rust was successfully installed to \$HOME/.cargo/bin"
-        echo -e "${YELLOW}⚠️  ${NC}Could not write to $BASHRC. Please add this line manually:"
-        echo "$CARGO_LINE"
+        echo "Rust installation failed. See log:"
+        cat "$temp_log" >&2
+        rm -f "$temp_log" "$rustup_init"
+        return 1
     fi
-else
-    echo -e "${RED}❌ ${NC}Rust installation failed."
-    exit $INSTALL_STATUS
-fi
+}
+
