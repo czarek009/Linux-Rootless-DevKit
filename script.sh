@@ -5,6 +5,44 @@ set -e
 # TODO: Needs to be modifiable by the initial script configuration.
 SHELLRC_PATH="$HOME/.bashrc"
 
+# Run logger test sequence:
+echo "ℹ️ Running logger test sequence..."
+TEST_LOG_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )/src/scriptLogger/logs"
+bash ./src/scriptLogger/loggerTest.sh
+wait
+
+# Verify logger results:
+logger_check_str()
+{
+  local file_prefix="$1"
+  local search_str="$2"
+  local log_file
+  # take most recent log file:
+  log_file=$(find "$TEST_LOG_DIR" -type f -name "${file_prefix}*" | sort | tail -n 1)
+
+  if [ -n "$log_file" ] && [ -f "$log_file" ]; then
+    if grep -Fq "$search_str" "$log_file" &> /dev/null; then
+        echo "✅ File '$log_file' contains string '$search_str'."
+    else
+        echo "❌ File '$log_file' does not contain string '$search_str'."
+        exit 1
+    fi
+  else
+    echo "❌ No log file found with prefix '$file_prefix' in '$log_dir'."
+    exit 1
+  fi
+}
+logger_check_str "loggerTest" "Starting scriptLogger test"
+logger_check_str "loggerTest" "This is a warning message"
+logger_check_str "loggerTest" "This is an error message"
+logger_check_str "loggerTest" "This is a debug message"
+logger_check_str "loggerTest" "This is a custom log message."
+logger_check_str "loggerTest" "this/file/does/not/exist' does not exist"
+logger_check_str "loggerTest" "Command 'ls' exists"
+logger_check_str "loggerTest" "Command 'thiscommanddoesnotexist' does not exist"
+logger_check_str "testTraps" "Script interrupted by user"
+rm -r "$TEST_LOG_DIR"
+
 # Get the directory of this script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_TOP_DIR="${SCRIPT_DIR}"
