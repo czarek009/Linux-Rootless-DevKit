@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-set -Eu
+set -e
+
+# Parameter for setting shell config file that will be used by a user (bashrc/zshrc)
+# TODO: Needs to be modifiable by the initial script configuration.
+SHELLRC_PATH="$HOME/.bashrc"
 
 # Get the directory of this script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -14,11 +18,11 @@ else
     exit 1
 fi
 
-# Install rust
-install_rust || exit 1
+# Install rust with shell config file as an argument
+Rust::install ${SHELLRC_PATH} || exit 1
 
 # Verify installation
-source $HOME/.bashrc
+source ${SHELLRC_PATH}
 if command -v rustc >/dev/null 2>&1; then
   rustc --version
 else
@@ -35,8 +39,8 @@ else
     exit 1
 fi
 
-# Uninstall Rust
-uninstall_rust || exit 1
+# Uninstall Rust with shell config file as an argument
+Rust::uninstall ${SHELLRC_PATH} || exit 1
 
 # Verify uninstallation
 if [ ! -d "$HOME/.cargo" ] && [ ! -d "$HOME/.rustup" ]; then
