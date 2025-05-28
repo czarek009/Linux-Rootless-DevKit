@@ -48,7 +48,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_TOP_DIR="${SCRIPT_DIR}"
 
 # Source rust install file
-RUST_INSTALL_PATH="${PROJECT_TOP_DIR}/src/install_rust.sh"
+RUST_INSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/install_rust.sh"
 if [[ -f "${RUST_INSTALL_PATH}" ]]; then
     source "${RUST_INSTALL_PATH}"
 else
@@ -69,7 +69,7 @@ else
 fi
 
 # Source Rust Cli tools install file
-RUST_TOOLS_INSTALL_PATH="${PROJECT_TOP_DIR}/src/install_rust_cli_tools.sh"
+RUST_TOOLS_INSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/install_rust_cli_tools.sh"
 if [[ -f "${RUST_TOOLS_INSTALL_PATH}" ]]; then
     source "${RUST_TOOLS_INSTALL_PATH}"
 else
@@ -81,11 +81,11 @@ fi
 RustCli::install_all_tools || exit 1
 
 # Verify installation of rust tools
-source $HOME/.bashrc
+source ${SHELLRC_PATH}
 RustCli::verify_installed || exit 1
 
 # Source Rust Cli tools uninstall file
-RUST_TOOLS_UNINSTALL_PATH="${PROJECT_TOP_DIR}/src/uninstall_rust_cli_tools.sh"
+RUST_TOOLS_UNINSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/uninstall_rust_cli_tools.sh"
 if [[ -f "${RUST_TOOLS_UNINSTALL_PATH}" ]]; then
     source "${RUST_TOOLS_UNINSTALL_PATH}"
 else
@@ -97,11 +97,11 @@ fi
 RustCli::uninstall_all_tools || exit 1
 
 # Verify uninstallation of rust tools
-source $HOME/.bashrc
+source ${SHELLRC_PATH}
 RustCli::verify_uninstalled || exit 1
 
 # Source rust uninstall file
-RUST_UNINSTALL_PATH="${PROJECT_TOP_DIR}/src/uninstall_rust.sh"
+RUST_UNINSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/uninstall_rust.sh"
 if [[ -f "${RUST_UNINSTALL_PATH}" ]]; then
     source "${RUST_UNINSTALL_PATH}"
 else

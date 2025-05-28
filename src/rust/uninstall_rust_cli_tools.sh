@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Uninstall a single Rust CLI tool if installed
-RustCli::uninstall_tool() {
+Rust::Cli::uninstall_tool() {
     local crate_name="$1"
     local command_name="$2"
     local shell_init="$3"
@@ -40,7 +40,7 @@ RustCli::uninstall_tool() {
 }
 
 # Uninstall all desired Rust CLI tools
-RustCli::uninstall_all_tools() {
+Rust::Cli::uninstall_all_tools() {
     # Get the directory of the current script
     local SCRIPT_CURR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local RUST_TOOLS_UTILS_PATH="${SCRIPT_CURR_DIR}/rust_tools_utils.sh"
@@ -53,16 +53,16 @@ RustCli::uninstall_all_tools() {
         exit 1
     fi
 
-    RustCli::check_cargo_available | exit 1
+    Rust::Cli::check_cargo_available | exit 1
     
     for entry in "${RUST_CLI_TOOLS[@]}"; do
-        read -r tool_name binary _ shell_init <<< "$(RustCli::parse_tool_entry "$entry")"
-        RustCli::uninstall_tool "$tool_name" "$binary" "$shell_init"
+        read -r tool_name binary _ shell_init <<< "$(Rust::Cli::parse_tool_entry "$entry")"
+        Rust::Cli::uninstall_tool "$tool_name" "$binary" "$shell_init"
     done
 }
 
 # Verify all rust tools have been removed
-RustCli::verify_uninstalled() {
+Rust::Cli::verify_uninstalled() {
     # Get the directory of the current script
     local SCRIPT_CURR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local RUST_TOOLS_UTILS_PATH="${SCRIPT_CURR_DIR}/rust_tools_utils.sh"
@@ -78,7 +78,7 @@ RustCli::verify_uninstalled() {
     # Verify defined rust tools
     echo "Verifying uninstallation of Rust CLI tools:"
     for entry in "${RUST_CLI_TOOLS[@]}"; do
-        read -r tool_name binary _ _ <<< "$(RustCli::parse_tool_entry "$entry")"
+        read -r tool_name binary _ _ <<< "$(Rust::Cli::parse_tool_entry "$entry")"
         if command -v "$binary" >/dev/null 2>&1 | cargo install --list | grep -q "^$tool_name v"; then
             echo "$tool_name still exist after uninstall"
 	    return 1

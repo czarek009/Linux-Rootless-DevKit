@@ -2,7 +2,7 @@
 
 
 # Install a single Rust CLI tool if not already installed
-RustCli::install_tool() {
+Rust::Cli::install_tool() {
     local tool_name="$1"
     local command_name="$2"
     local install_flags="$3"
@@ -42,7 +42,7 @@ RustCli::install_tool() {
 }
 
 # Install all desired Rust CLI tools
-RustCli::install_all_tools() {
+Rust::Cli::install_all_tools() {
     # Get the directory of the current script
     local SCRIPT_CURR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local RUST_TOOLS_UTILS_PATH="${SCRIPT_CURR_DIR}/rust_tools_utils.sh"
@@ -55,16 +55,16 @@ RustCli::install_all_tools() {
         exit 1
     fi
 
-    RustCli::check_cargo_available || exit 1
+    Rust::Cli::check_cargo_available || exit 1
 
     for entry in "${RUST_CLI_TOOLS[@]}"; do
-        read -r tool_name binary flags shell_init <<< "$(RustCli::parse_tool_entry "$entry")"
-        RustCli::install_tool "$tool_name" "$binary" "$flags" "$shell_init" || exit 1
+        read -r tool_name binary flags shell_init <<< "$(Rust::Cli::parse_tool_entry "$entry")"
+        Rust::Cli::install_tool "$tool_name" "$binary" "$flags" "$shell_init" || exit 1
     done
 }
 
 # Verify installation of all defined Rust tools
-RustCli::verify_installed() {
+Rust::Cli::verify_installed() {
     # Get the directory of the current script
     local SCRIPT_CURR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local RUST_TOOLS_UTILS_PATH="${SCRIPT_CURR_DIR}/rust_tools_utils.sh"
@@ -79,7 +79,7 @@ RustCli::verify_installed() {
 
     echo "Verifying installed Rust CLI tools:"
     for entry in "${RUST_CLI_TOOLS[@]}"; do
-        read -r tool_name binary _ _ <<< "$(RustCli::parse_tool_entry "$entry")"
+        read -r tool_name binary _ _ <<< "$(Rust::Cli::parse_tool_entry "$entry")"
 
         if command -v "$binary" &>/dev/null; then
             echo "$tool_name is successfully installed"
