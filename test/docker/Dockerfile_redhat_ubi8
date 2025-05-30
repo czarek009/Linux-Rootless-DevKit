@@ -45,7 +45,6 @@ COPY . /app
 WORKDIR /app
 
 RUN chmod +x \
-	src/install_rust.sh src/uninstall_rust.sh script.sh \
 	src/zsh/zshUninstall.sh src/zsh/zshInstall.sh \
 	src/go_install.sh src/go_uninstall.sh
 
