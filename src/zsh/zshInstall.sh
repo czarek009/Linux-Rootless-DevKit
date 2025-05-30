@@ -7,152 +7,218 @@
 #set -e
 # Show executed commanmds:
 #set -x
+LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../scriptLogger" && pwd)/scriptLogger.sh"
+source "$LOGGER_PATH"
+PRECONFIGURED_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/preconfigured" && pwd)"
 
-# Variables:
-ZSH_VERSION="5.9"
-INSTALL_DIR="$HOME/.local"
-SRC_DIR="$HOME/src"
+Zsh::get_latest_available_zsh_version() 
+{
+    curl -s "https://sourceforge.net/projects/zsh/rss?path=/zsh" \
+    | grep -oP 'zsh-\K[0-9]+\.[0-9]+(\.[0-9]+)?(?=\.tar\.xz)' \
+    | sort -V \
+    | tail -1
+}
 
-create_dir_if_not_exists() {
-    if [ ! -d "$1" ]; then
-        echo "ℹ️ Creating directory: $1"
-        mkdir -p "$1"
+Zsh::install()
+{
+    PRECONFIGURED_ARCHIVE="$(ls "$PRECONFIGURED_DIR"/zsh-*.tar.xz 2>/dev/null | head -n1)"
+
+    cd "$SRC_DIR" || exit
+
+    if [ -n "$PRECONFIGURED_ARCHIVE" ]; then
+        PRECONF_VERSION="$(basename "$PRECONFIGURED_ARCHIVE" | grep -oP '[0-9]+\.[0-9]+(\.[0-9]+)?')"
     else
-        echo "⚠️ Directory already exists: $1"
+        PRECONF_VERSION=""
+    fi
+
+    if [ "$PRECONF_VERSION" = "$ZSH_VERSION" ]; then
+        Logger::log_info "Using preconfigured Zsh archive: $PRECONFIGURED_ARCHIVE"
+        cp "$PRECONFIGURED_ARCHIVE" .
+    elif [ -n "$PRECONF_VERSION" ]; then
+        Logger::log_warn "Preconfigured Zsh version ($PRECONF_VERSION) is not the latest ($ZSH_VERSION) - downloading latest"
+        curl -LO "https://sourceforge.net/projects/zsh/files/zsh/$ZSH_VERSION/zsh-$ZSH_VERSION.tar.xz"
+    else
+        Logger::log_warn "No preconfigured Zsh archive found - downloading latest"
+        curl -LO "https://sourceforge.net/projects/zsh/files/zsh/$ZSH_VERSION/zsh-$ZSH_VERSION.tar.xz"
+    fi
+
+    if [ ! -d "zsh-$ZSH_VERSION" ]; then
+        Logger::log_info "Extracting zsh $ZSH_VERSION"
+        tar -xf "zsh-$ZSH_VERSION.tar.xz"
+    fi
+
+    cd "zsh-$ZSH_VERSION" || exit
+    Logger::log_info "Configuring zsh"
+    ./configure --prefix="$INSTALL_DIR" --with-tcsetpgrp > /dev/null 2>&1
+    Logger::log_info "Compiling zsh"
+    make > /dev/null 2>&1
+    Logger::log_info "Installing zsh"
+    make install > /dev/null 2>&1
+
+    # Set $HOME/.local/bin in PATH:
+    if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
+        echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+        export PATH="$HOME/.local/bin:$PATH"
+        source $HOME/.bashrc
+    fi
+
+    # Install oh-my-zsh
+    export RUNZSH=no
+    export ZSH="$HOME/.oh-my-zsh"
+    export CHSH=no
+    export KEEP_ZSHRC=yes
+    export PATH="$HOME/.local/bin:$PATH"
+
+    if [ ! -d "$ZSH" ]; then
+        Logger::log_info "Installing oh-my-zsh"
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    else
+        Logger::log_warning "Oh-my-zsh already exists at $ZSH"
+    fi
+
+    Logger::log_info "Finished installing zsh and oh-my-zsh"
+}
+
+Zsh::install_fonts()
+{
+    # Install fonts:
+    Logger::log_info "Installing Nerd Fonts and PowerLine fonts"
+    FONT_DIR="$HOME/.fonts"
+    FONT_NAME="UbuntuMono"
+    FONT_VERSION="3.4.0"
+    FONT_URL="https://github.com/ryanoasis/nerd-fonts/releases/download/v$FONT_VERSION/$FONT_NAME.tar.xz"
+
+    Utils::create_dir_if_not_exists "$FONT_DIR"
+    cd "$SRC_DIR" || exit
+
+    if [ ! -f "${FONT_NAME}.tar.xz" ]; then
+        Logger::log_info "Downloading Nerd Font: $FONT_NAME (tar.xz)"
+        curl -fLo "${FONT_NAME}.tar.xz" "$FONT_URL"
+    else
+        Logger::log_warning "Nerd Font archive already exists"
+    fi
+
+    Logger::log_info "Extracting fonts to $FONT_DIR"
+    tar -xf "${FONT_NAME}.tar.xz" -C "$FONT_DIR"
+
+    # Refresh fonts
+    if command -v fc-cache >/dev/null 2>&1; then
+        Logger::log_info "Updating font cache"
+        fc-cache -fv "$FONT_DIR" > /dev/null 2>&1
+    else
+        Logger::log_warning "Font cache tool not found. Fonts installed, but you may need to reload fonts manually"
+    fi
+
+    Logger::log_info "Installing PowerLine fonts"
+    git clone --depth 1 "https://github.com/powerline/fonts" "pl-fonts" > /dev/null 2>&1
+    cd "pl-fonts" || exit
+    /bin/bash ./install.sh > /dev/null 2>&1
+
+    Logger::log_info "Finished installing fonts"
+}
+
+Zsh::install_theme()
+{
+    # Install powerlevel10k theme:
+    # TODO: ADD PRECONFIGURED file
+    Logger::log_info "Installing Powerlevel10k theme for oh-my-zsh"
+    rm -f "$HOME/.p10k.zsh"
+    mkdir -p "$HOME/.oh-my-zsh/custom/themes/power"
+    git clone --depth=1 "https://github.com/romkatv/powerlevel10k.git" "$HOME/.oh-my-zsh/custom/themes/powerlevel10k" > /dev/null 2>&1
+
+    if grep -q '^ZSH_THEME=' $HOME/.zshrc; then
+        sed -i 's/^ZSH_THEME=.*/ZSH_THEME="powerlevel10k\/powerlevel10k"/g' $HOME/.zshrc
+    else
+        echo 'ZSH_THEME="powerlevel10k/powerlevel10k"' >> $HOME/.zshrc
+    fi
+
+    if ! grep -q "source \$ZSH/oh-my-zsh.sh" $HOME/.zshrc; then
+        echo "export ZSH="$HOME/.oh-my-zsh"" >> $HOME/.zshrc
+        echo "plugins=()" >> $HOME/.zshrc
+        echo "source $ZSH/oh-my-zsh.sh" >> $HOME/.zshrc
+    fi
+
+    PRECONFIGURED_P10K="$PRECONFIGURED_DIR/.p10k.zsh"
+    if [ -f "$PRECONFIGURED_P10K" ]; then
+        Logger::log_info "Copying preconfigured .p10k.zsh to $HOME"
+        cp "$PRECONFIGURED_P10K" "$HOME/.p10k.zsh"
+    else
+        Logger::log_warning "No preconfigured .p10k.zsh found in preconfigured directory"
+    fi
+
+    Logger::log_info "Finished installing theme for oh-my-zsh"
+}
+
+Zsh::set_aliases()
+{
+    Logger::log_info "Setting up aliases for zsh >> $HOME/.zshrc"
+    # TODO: Add more aliases
+    # 8: set aliases:
+    if ! grep -q 'alias gs=' $HOME/.zshrc; then
+        echo 'alias gs="git status"' >> $HOME/.zshrc
+    fi
+    source "$HOME/.bashrc"
+
+    Logger::log_info "Finished setting up aliases for zsh"
+}
+
+Zsh::verify_installation()
+{
+    # Check if zsh is installed
+    if [ -x "$INSTALL_DIR/bin/zsh" ]; then
+        Logger::log_info "✔ Zsh installed successfully at $INSTALL_DIR/bin/zsh"
+        echo -e "\033[0;32m✔ Please restart your terminal\033[0m"
+        echo -e "\033[0;32mℹ️ Font '$FONT_NAME' installed. Please set it in your terminal preferences.\033[0m"
+    else
+        echo "❌ Zsh installation failed or zsh not found at $INSTALL_DIR/bin/zsh"
+        Logger::log_error "Zsh installation failed or zsh not found at $INSTALL_DIR/bin/zsh"
     fi
 }
 
-# Prepare dirs:
-create_dir_if_not_exists "$INSTALL_DIR"
-create_dir_if_not_exists "$SRC_DIR"
+Zsh::set_as_default_shell()
+{
+    # Set zsh as default:
 
-##### INSTALL:
-# Download and compile zsh source
-cd "$SRC_DIR" || exit
-if [ ! -f "zsh-$ZSH_VERSION.tar.xz" ]; then
-    echo "ℹ️ Downloading zsh $ZSH_VERSION source..."
-    curl -LO "https://sourceforge.net/projects/zsh/files/zsh/$ZSH_VERSION/zsh-$ZSH_VERSION.tar.xz"
-else
-    echo "⚠️ Zsh archive already downloaded."
-fi
+    # TODO: Implement a way to set ZSH as default shell
+    # if ! grep -q "$ZSH_BIN" "$HOME/.bashrc"; then
+    #     {
+    #         echo "
+    # # Start zsh if available
+    # if [ -x \"$ZSH_BIN\" ] && [ \"\$SHELL\" != \"$ZSH_BIN\" ]; then
+    #     #export SHELL=\"$HOME/.local/bin/zsh\"
+    #     exec \"$ZSH_BIN\"
+    # fi" >> "$HOME/.bashrc"
+    #     } >> "$HOME/.bashrc"
+    # fi
+    Logger::log_warning "Setting zsh as default shell - no implementation yet"
+}
 
-if [ ! -d "zsh-$ZSH_VERSION" ]; then
-    echo "ℹ️ Extracting zsh..."
-    tar -xf "zsh-$ZSH_VERSION.tar.xz"
-fi
+Zsh::clean_up()
+{
+    Logger::log_info "Cleaning up temporary files"
+    rm -rf "$SRC_DIR/zsh-$ZSH_VERSION" "$SRC_DIR/zsh-$ZSH_VERSION.tar.xz" "$SRC_DIR/pl-fonts"
+}
 
-cd "zsh-$ZSH_VERSION" || exit
-echo "ℹ️ Configuring zsh..."
-./configure --prefix="$INSTALL_DIR" --with-tcsetpgrp > /dev/null 2>&1
-echo "ℹ️ Compiling zsh..."
-make > /dev/null 2>&1
-echo "ℹ️ Installing zsh..."
-make install > /dev/null 2>&1
+Utils::create_dir_if_not_exists() {
+    if [ ! -d "$1" ]; then
+        Logger::log_info "Creating directory: $1"
+        mkdir -p "$1"
+    else
+        Logger::log_warning "Directory already exists: $1"
+    fi
+}
 
-# Set $HOME/.local/bin in PATH:
-if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
-    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
-    export PATH="$HOME/.local/bin:$PATH"
-fi
+Logger::log_info "Starting Zsh installation script"
+INSTALL_DIR="$HOME/.local"
+SRC_DIR="$HOME/src"
+ZSH_VERSION="$(Zsh::get_latest_available_zsh_version)"
+Logger::log_info "Latest Zsh version: $ZSH_VERSION"
 
-source $HOME/.bashrc
+Utils::create_dir_if_not_exists "$INSTALL_DIR"
+Utils::create_dir_if_not_exists "$SRC_DIR"
 
-# Set zsh as default:
-ZSH_BIN="$INSTALL_DIR/bin/zsh"
-# TODO: Implement a way to set ZSH as default shell
-# if ! grep -q "$ZSH_BIN" "$HOME/.bashrc"; then
-#     {
-#         echo "
-# # Start zsh if available
-# if [ -x \"$ZSH_BIN\" ] && [ \"\$SHELL\" != \"$ZSH_BIN\" ]; then
-#     #export SHELL=\"$HOME/.local/bin/zsh\"
-#     exec \"$ZSH_BIN\"
-# fi" >> "$HOME/.bashrc"
-#     } >> "$HOME/.bashrc"
-# fi
-
-# source $HOME/.bashrc
-
-
-# Install oh-my-zsh
-export RUNZSH=no
-export ZSH="$HOME/.oh-my-zsh"
-export CHSH=no
-export KEEP_ZSHRC=yes
-export PATH="$HOME/.local/bin:$PATH"
-
-if [ ! -d "$ZSH" ]; then
-    echo "ℹ️Installing oh-my-zsh..."
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-else
-    echo "⚠️Oh-my-zsh already installed."
-fi
-
-
-# Install fonts:
-FONT_DIR="$HOME/.fonts"
-FONT_NAME="UbuntuMono"
-FONT_VERSION="3.4.0"
-FONT_URL="https://github.com/ryanoasis/nerd-fonts/releases/download/v$FONT_VERSION/$FONT_NAME.tar.xz"
-
-create_dir_if_not_exists "$FONT_DIR"
-cd "$SRC_DIR" || exit
-
-if [ ! -f "${FONT_NAME}.tar.xz" ]; then
-    echo "ℹ️ Downloading Nerd Font: $FONT_NAME (tar.xz)..."
-    curl -fLo "${FONT_NAME}.tar.xz" "$FONT_URL"
-else
-    echo "⚠️Nerd Font archive already exists."
-fi
-
-echo "ℹ️ Extracting fonts to $FONT_DIR..."
-tar -xf "${FONT_NAME}.tar.xz" -C "$FONT_DIR"
-
-# Refresh fonts
-if command -v fc-cache >/dev/null 2>&1; then
-    echo "ℹ️ Updating font cache..."
-    fc-cache -fv "$FONT_DIR"
-else
-    echo "⚠️ Font cache tool not found. Fonts installed, but you may need to reload fonts manually."
-fi
-
-echo "ℹ️ Installing PowerLine fonts..."
-git clone --depth 1 "https://github.com/powerline/fonts" "pl-fonts"
-cd "pl-fonts" || exit
-/bin/bash ./install.sh
-
-##### OPTIONSALS:
-
-# Install powerlevel10k theme:
-rm -f "$HOME/.p10k.zsh"
-mkdir -p "$HOME/.oh-my-zsh/custom/themes/power"
-git clone --depth=1 "https://github.com/romkatv/powerlevel10k.git" "$HOME/.oh-my-zsh/custom/themes/powerlevel10k"
-
-if grep -q '^ZSH_THEME=' $HOME/.zshrc; then
-    sed -i 's/^ZSH_THEME=.*/ZSH_THEME="powerlevel10k\/powerlevel10k"/g' $HOME/.zshrc
-else
-    echo 'ZSH_THEME="powerlevel10k/powerlevel10k"' >> $HOME/.zshrc
-fi
-
-if ! grep -q "source \$ZSH/oh-my-zsh.sh" $HOME/.zshrc; then
-    echo "export ZSH="$HOME/.oh-my-zsh"" >> $HOME/.zshrc
-    echo "plugins=()" >> $HOME/.zshrc
-    echo "source $ZSH/oh-my-zsh.sh" >> $HOME/.zshrc
-fi
-
-# 8: set aliases:
-if ! grep -q 'alias gs=' $HOME/.zshrc; then
-  echo 'alias gs="git status"' >> $HOME/.zshrc
-fi
-
-# 9: resource .bashrc
-source "$HOME/.bashrc"
-
-# Check if zsh is installed
-if [ -x "$INSTALL_DIR/bin/zsh" ]; then
-    echo -e "\033[0;32m✔ Zsh installed successfully at $INSTALL_DIR/bin/zsh\033[0m"
-    echo -e "\033[0;32m✔ Please restart your terminal\033[0m"
-    echo -e "\033[0;32mℹ️ Font '$FONT_NAME' installed. Please set it in your terminal preferences.\033[0m"
-else
-    echo "❌ Zsh installation failed or zsh not found at $INSTALL_DIR/bin/zsh"
-fi
+Zsh::install
+Zsh::install_fonts
+Zsh::install_theme
+Zsh::set_aliases
+Zsh::verify_installation
