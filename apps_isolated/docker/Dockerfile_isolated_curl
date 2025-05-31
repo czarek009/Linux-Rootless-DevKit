@@ -1,0 +1,107 @@
+# DOCKER_BUILDKIT=1 docker build --no-cache --build-arg "USER_UID=$(id -u)" --build-arg "USER_GID=$(id -g)" --file ./apps_isolated/docker/Dockerfile_isolated_curl --tag app-isolated:curl .
+# NOTE: Use DOCKER_BUILDKIT=1 to enable BuildKit, which is the new build system for Docker (options --output and --progress are not supported in the old build system).
+# NOTE: Use --no-cache to force the build from sratch everytime, so that the latest version of the CURL is used.
+
+# NEVER use latest as builder. We need to stable, deterministic version of the base image.
+FROM alpine:3.20 AS builder
+
+LABEL maintainer="Michal Kukowski - KukosSW"
+
+USER root
+
+RUN apk add --no-cache \
+        build-base \
+        autoconf \
+        automake \
+        libtool \
+        pkgconfig \
+        openssl-dev \
+        nghttp2-dev \
+        brotli-dev \
+        zlib-dev \
+        zstd-dev \
+        libidn2-dev \
+        libunistring-dev \
+        libpsl-dev \
+        libssh2-dev \
+        c-ares-dev \
+        openldap-dev \
+        cyrus-sasl-dev \
+        libgsasl-dev \
+        rtmpdump-dev \
+        gnutls-dev \
+        gmp-dev \
+        git
+
+WORKDIR /src
+RUN LATEST_CURL_TAG=$(git ls-remote --tags --refs https://github.com/curl/curl.git | \
+                      awk '{print $2}' | \
+                      awk -F '/' '{print $3}' | \
+                      grep "^curl" | \
+                      grep -v -E "pre|alpha|beta" | \
+                      sort -Vr | \
+                      head -n 1) && \
+    git clone --depth 1 --branch "${LATEST_CURL_TAG}" https://github.com/curl/curl.git
+
+WORKDIR /src/curl
+RUN autoreconf -fi; \
+    ./configure \
+        --prefix=/usr/local \
+        --disable-shared \
+        --enable-static \
+        --with-openssl \
+        --with-nghttp2 \
+        --with-libssh2 \
+        --with-libidn2 \
+        --with-brotli \
+        --with-zlib \
+        --with-libpsl \
+        --with-libgsasl \
+        --with-gssapi \
+        --with-zstd \
+        --enable-ares \
+        --enable-ipv6 \
+        --enable-unix-sockets \
+        --disable-ldap \
+        --disable-sspi && \
+    make -j$(nproc) && \
+    make install
+
+FROM alpine:3.20 AS final
+
+USER root
+
+RUN apk add --no-cache \
+        openssl \
+        nghttp2 \
+        brotli \
+        zlib \
+        zstd \
+        libidn2 \
+        libunistring \
+        libpsl \
+        c-ares \
+        openldap \
+        cyrus-sasl \
+        libgsasl \
+        rtmpdump \
+        libssh2 \
+        gnutls \
+        gmp \
+        ca-certificates
+
+RUN update-ca-certificates
+
+COPY --from=builder /usr/local/bin/curl /usr/bin/curl
+
+ARG USERNAME=curluser
+ARG USER_UID=1000
+ARG USER_GID=1000
+
+RUN addgroup -g "${USER_GID}" "${USERNAME}" && \
+    adduser -D -u "${USER_UID}" -G "${USERNAME}" -h "/home/${USERNAME}" -s /bin/sh "${USERNAME}"
+
+USER "$USERNAME"
+ENV HOME=/home/"$USERNAME"
+
+ENTRYPOINT ["/usr/bin/curl"]

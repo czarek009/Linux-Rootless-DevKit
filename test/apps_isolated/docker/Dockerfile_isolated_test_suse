@@ -1,0 +1,56 @@
+# DOCKER_BUILDKIT=1 docker build --no-cache --file ./test/apps_isolated/docker/Dockerfile_isolated_test_suse --tag tests-suse:apps-isolated .
+# docker run --rm -t -v /etc/group:/etc/group:ro -v /var/run/docker.sock:/var/run/docker.sock --group-add $(stat -c '%g' /var/run/docker.sock) tests-suse:apps-isolated
+
+FROM registry.suse.com/suse/sle15:15.6 AS tester
+
+LABEL maintainer="Michal Kukowski - KukosSW"
+
+USER root
+
+ENV GOBIN=/usr/lib/docker/cli-plugins
+
+RUN zypper refresh && \
+    zypper install -y \
+        docker \
+        ca-certificates \
+        sudo \
+        git \
+        curl \
+        gawk
+
+RUN mkdir -p ${GOBIN}
+
+RUN LATEST_GO_TAG=$(curl -fsSL https://go.dev/VERSION?m=text | head -n 1) && \
+    curl -fsSL "https://dl.google.com/go/${LATEST_GO_TAG}.linux-amd64.tar.gz" -o /tmp/go.tar.gz && \
+    tar -C /usr/local -xzf /tmp/go.tar.gz && \
+    ln -s /usr/local/go/bin/go /usr/bin/go && \
+    ln -s /usr/local/go/bin/gofmt /usr/bin/gofmt && \
+    rm /tmp/go.tar.gz
+
+WORKDIR /tmp
+RUN LATEST_DOCKER_BUILDX_TAG=$(git ls-remote --tags --refs  https://github.com/docker/buildx.git | \
+                               awk '{print $2}' | \
+                               awk -F '/' '{print $3}' | \
+                               grep "^v" | \
+                               grep -v "rc" | \
+                               sort -Vr | \
+                               head -n 1) && \
+    git clone --depth 1 --branch "${LATEST_DOCKER_BUILDX_TAG}" https://github.com/docker/buildx.git
+
+WORKDIR /tmp/buildx
+RUN go mod download && \
+    go build -o docker-buildx ./cmd/buildx && \
+    mv docker-buildx ${GOBIN}/docker-buildx && \
+    chmod +x ${GOBIN}/docker-buildx
+
+RUN groupadd -f -g 999 docker && \
+    useradd -m -u 1111 -g docker tester-wo-root && \
+    echo "tester-wo-root ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/tester-wo-root && \
+    chmod 0440 /etc/sudoers.d/tester-wo-root
+
+USER tester-wo-root
+
+COPY . /src
+WORKDIR /src
+
+ENTRYPOINT ["/src/test/apps_isolated/test_main.sh"]
