@@ -1,8 +1,8 @@
-name: Ubuntu environment test
+name: Ubuntu latest
 
 on:
   push:
-    branches: 
+    branches:
       - '**'   # Matches all branches on push
   pull_request:
     branches: [ main, development ]
@@ -17,5 +17,5 @@ jobs:
 
     - name: Build and run Docker container
       run: |
-        docker build -t test-image .
-        docker run --rm test-image
+        docker build -f test/docker/Dockerfile_ubuntu_latest -t ubuntu_latest-image .
+        docker run --rm ubuntu_latest-image
