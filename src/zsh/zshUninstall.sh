@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This script uninstalls zsh + oh-my-zsh installed without sudo access.
 
@@ -29,7 +29,7 @@ fi
 
 # Remove custom zsh installation
 if [ -x "$ZSH_INSTALL_PATH" ]; then
-    echo " ℹ️ Removing custom zsh binaries..."
+    echo "ℹ️ Removing custom zsh binaries..."
     rm -rf "$INSTALL_DIR/bin/zsh"
     rm -rf "$INSTALL_DIR/share/zsh"
     rm -rf "$INSTALL_DIR/man/man1/zsh.1"

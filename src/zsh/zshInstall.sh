@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This script must install zsh + oh-my-zsh + fonts + power10k
 # without sudo access
@@ -79,6 +79,22 @@ Zsh::install()
     Logger::log_info "Finished installing zsh and oh-my-zsh"
 }
 
+Zsh::install_plugins()
+{
+    Logger::log_info "Installing oh-my-zsh plugins"
+
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting > /dev/null 2>&1
+    git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions > /dev/null 2>&1
+    git clone https://github.com/MichaelAquilina/zsh-you-should-use.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/you-should-use > /dev/null 2>&1
+    git clone https://github.com/zsh-users/zsh-history-substring-search ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-history-substring-search > /dev/null 2>&1
+
+    if grep -q '^plugins=(git)' $HOME/.zshrc; then
+        sed -i 's/^plugins=(git).*/plugins=(git zsh-autosuggestions zsh-syntax-highlighting you-should-use zsh-history-substring-search)/g' $HOME/.zshrc
+    fi
+
+    Logger::log_info "Finished installing oh-my-zsh plugins"
+}
+
 Zsh::install_fonts()
 {
     # Install fonts:
@@ -120,7 +136,6 @@ Zsh::install_fonts()
 Zsh::install_theme()
 {
     # Install powerlevel10k theme:
-    # TODO: ADD PRECONFIGURED file
     Logger::log_info "Installing Powerlevel10k theme for oh-my-zsh"
     rm -f "$HOME/.p10k.zsh"
     mkdir -p "$HOME/.oh-my-zsh/custom/themes/power"
@@ -146,6 +161,16 @@ Zsh::install_theme()
         Logger::log_warning "No preconfigured .p10k.zsh found in preconfigured directory"
     fi
 
+    echo '# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+    source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi' | cat - "$HOME/.zshrc"> temp && mv temp "$HOME/.zshrc"
+
+echo "# To customize prompt, run p10k configure or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh" >> "$HOME/.zshrc"
+
     Logger::log_info "Finished installing theme for oh-my-zsh"
 }
 
@@ -167,8 +192,9 @@ Zsh::verify_installation()
     # Check if zsh is installed
     if [ -x "$INSTALL_DIR/bin/zsh" ]; then
         Logger::log_info "✔ Zsh installed successfully at $INSTALL_DIR/bin/zsh"
-        echo -e "\033[0;32m✔ Please restart your terminal\033[0m"
         echo -e "\033[0;32mℹ️ Font '$FONT_NAME' installed. Please set it in your terminal preferences.\033[0m"
+        echo -e "\033[0;32mℹ️ Run \"p10k configure\" to run prompt configurator \033[0m"
+        echo -e "\033[0;32m✔ Please restart your terminal\033[0m"
     else
         echo "❌ Zsh installation failed or zsh not found at $INSTALL_DIR/bin/zsh"
         Logger::log_error "Zsh installation failed or zsh not found at $INSTALL_DIR/bin/zsh"
@@ -199,7 +225,8 @@ Zsh::clean_up()
     rm -rf "$SRC_DIR/zsh-$ZSH_VERSION" "$SRC_DIR/zsh-$ZSH_VERSION.tar.xz" "$SRC_DIR/pl-fonts"
 }
 
-Utils::create_dir_if_not_exists() {
+Utils::create_dir_if_not_exists() 
+{
     if [ ! -d "$1" ]; then
         Logger::log_info "Creating directory: $1"
         mkdir -p "$1"
@@ -218,6 +245,7 @@ Utils::create_dir_if_not_exists "$INSTALL_DIR"
 Utils::create_dir_if_not_exists "$SRC_DIR"
 
 Zsh::install
+Zsh::install_plugins
 Zsh::install_fonts
 Zsh::install_theme
 Zsh::set_aliases
