@@ -192,8 +192,9 @@ Zsh::verify_installation()
     # Check if zsh is installed
     if [ -x "$INSTALL_DIR/bin/zsh" ]; then
         Logger::log_info "✔ Zsh installed successfully at $INSTALL_DIR/bin/zsh"
-        echo -e "\033[0;32m✔ Please restart your terminal\033[0m"
         echo -e "\033[0;32mℹ️ Font '$FONT_NAME' installed. Please set it in your terminal preferences.\033[0m"
+        echo -e "\033[0;32mℹ️ Run \"p10k configure\" to run prompt configurator \033[0m"
+        echo -e "\033[0;32m✔ Please restart your terminal\033[0m"
     else
         echo "❌ Zsh installation failed or zsh not found at $INSTALL_DIR/bin/zsh"
         Logger::log_error "Zsh installation failed or zsh not found at $INSTALL_DIR/bin/zsh"
