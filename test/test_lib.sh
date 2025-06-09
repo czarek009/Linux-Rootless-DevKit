@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# To ignore warnings globally, go to the main directory and add the appropriate comments to the .shellcheckrc file.
+# To ignore warnings globally, go to the .shellcheckrc file.
 
 # Colors
 COLOR_RED="\033[0;31m"
 COLOR_GREEN="\033[0;32m"
 COLOR_RESET='\033[0m'
-COLOR_DARK_GRAY='\033[1;30m'
+COLOR_BLUE="\033[1;34m"
 
 # Runs shellcheck on a list of files and prints results
 function run_shellcheck_all_files() {
@@ -17,27 +17,35 @@ function run_shellcheck_all_files() {
     local idx=1
 
     for file in "${files[@]}"; do
-	echo -e "\n${COLOR_DARK_GRAY}🧪 [$idx] Check: $file ${COLOR_RESET}"
+        echo -e "\n${COLOR_BLUE}[CHECK] [$idx] Checking: $file ${COLOR_RESET}"
         if shellcheck "$file"; then
             ((pass++))
             pass_list+=("$file")
-            echo -e "${COLOR_GREEN}✔  Passed: $file"
+            echo -e "${COLOR_GREEN}[PASS] $file${COLOR_RESET}"
         else
             ((fail++))
             fail_list+=("$file")
-            echo -e "${COLOR_RED}✘ Failed: $file"
+            echo -e "${COLOR_RED}[FAIL] $file${COLOR_RESET}"
         fi
         ((idx++))
-	echo -e "\033[1;34m$(printf '%*s' "$(tput cols)" '' | tr ' ' '─')\033[0m"
+        cols=$(tput cols 2>/dev/null || echo 80)
+        echo -e "${COLOR_BLUE}$(printf '%*s' "$cols" '' | tr ' ' '-')${COLOR_RESET}"
     done
 
-    echo -e "\n${COLOR_GREEN}✅ Passed ${pass}:${COLOR_RESET}"
+    echo -e "\n${COLOR_GREEN}[PASS] Passed ${pass}:${COLOR_RESET}"
     for p in "${pass_list[@]}"; do
-	echo -e "  ${COLOR_GREEN}- $p${COLOR_RESET}"
+        echo -e "  ${COLOR_GREEN}- $p${COLOR_RESET}"
     done
 
-    echo -e "\n${COLOR_RED}❌ Failed (${fail}):${COLOR_RESET}"
+    echo -e "\n${COLOR_RED}[FAIL] Failed (${fail}):${COLOR_RESET}"
     for f in "${fail_list[@]}"; do
-	echo -e "  ${COLOR_RED}- $f${COLOR_RESET}"
+        echo -e "  ${COLOR_RED}- $f${COLOR_RESET}"
     done
+
+    # Return 1 if any files failed ShellCheck
+    if [ ${#fail_list[@]} -gt 0 ]; then
+        return 1
+    else
+        return 0
+    fi
 }
