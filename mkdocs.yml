@@ -1,0 +1,75 @@
+site_name: Better Linux VDI
+nav:
+  - Main page:
+    - index.md
+  - Modules:
+    - modules/index.md
+    - Rust:
+        modules/rust.md
+    - Go:
+        modules/go.md
+    - OhMyBash:
+        modules/ohmybash.md
+    - OhMyZsh:
+        modules/ohmyzsh.md
+  - Help:
+      - MkDocs:
+          help/mkdocs.md
+      - Markdown:
+          help/markdown.md
+theme:
+  name: material
+  features:
+    - content.tooltips
+    - navigation.tabs
+    - navigation.instant
+    - navigation.tracking
+    - navigation.indexes
+    - toc.follow
+    - toc.integrate
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - footnotes
+  - toc:
+      toc_depth: 2
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tilde
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - javascript/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+
+plugins:
+  - git-revision-date-localized:
+      fallback_to_build_date: true
+  - git-authors:
+      show_contribution: true
+      authorship_threshold_percent: 20
+      fallback_to_empty: true
+      enabled_on_serve: true
+  - search:
+      lang: en
+  - literate-nav:
+      implicit_index: true
+  - d2:
+      scale: 0.8
+      pad: 10
+      theme: 0
+      layout: elk
+
+
+validation:
+  absolute_links: relative_to_docs
+  unrecognized_links: warn
+  anchors: warn
