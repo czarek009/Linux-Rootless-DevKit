@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-
-LOGGER_DIR_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 || exit ; pwd -P )"
-LOG_FILE=""
-source "${LOGGER_DIR_PATH}"/scriptLogger.sh
+LOGGER_DIR_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+source $LOGGER_DIR_PATH/script_logger.sh
 
 
 Logger::log_info "Starting scriptLogger test..."
@@ -18,7 +16,7 @@ Utils::check_file_exists "/${HOME}/this/file/does/not/exist"
 Env::check_command_exists "ls"
 Env::check_command_exists "thiscommanddoesnotexist"
 
-SCRIPT_LOGGER_PATH="$(cd "$(dirname "$0")" && pwd)/scriptLogger.sh"
+SCRIPT_LOGGER_PATH="$(cd "$(dirname "$0")" && pwd)/script_logger.sh"
 cat << EOF > /tmp/testTraps.sh
 #!/usr/bin/env bash
 source "${SCRIPT_LOGGER_PATH}"

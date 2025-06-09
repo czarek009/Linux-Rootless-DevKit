@@ -2,8 +2,7 @@ name: Ubuntu latest
 
 on:
   push:
-    branches:
-      - '**'   # Matches all branches on push
+    branches: [ "**" ]
   pull_request:
     branches: [ main, development ]
 
@@ -12,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Environment Preparation
+        uses: actions/checkout@v3
 
-    - name: Build and run Docker container
-      run: |
-        docker build -f test/docker/Dockerfile_ubuntu_latest -t ubuntu_latest-image .
-        docker run --rm ubuntu_latest-image
+      - name: Build and run Docker container
+        run: |
+          docker build -f test/docker/Dockerfile_ubuntu_latest -t ubuntu_latest-image .
+          docker run --rm ubuntu_latest-image

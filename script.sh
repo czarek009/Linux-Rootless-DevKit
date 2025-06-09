@@ -8,7 +8,7 @@ SHELLRC_PATH="$HOME/.bashrc"
 # Run logger test sequence:
 echo "ℹ️ Running logger test sequence..."
 TEST_LOG_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )/src/scriptLogger/logs"
-bash ./src/scriptLogger/loggerTest.sh
+bash ./src/scriptLogger/test_logger.sh
 wait
 
 # Verify logger results:
@@ -32,14 +32,14 @@ logger_check_str()
     exit 1
   fi
 }
-logger_check_str "loggerTest" "Starting scriptLogger test"
-logger_check_str "loggerTest" "This is a warning message"
-logger_check_str "loggerTest" "This is an error message"
-logger_check_str "loggerTest" "This is a debug message"
-logger_check_str "loggerTest" "This is a custom log message."
-logger_check_str "loggerTest" "this/file/does/not/exist' does not exist"
-logger_check_str "loggerTest" "Command 'ls' exists"
-logger_check_str "loggerTest" "Command 'thiscommanddoesnotexist' does not exist"
+logger_check_str "test_logger" "Starting scriptLogger test"
+logger_check_str "test_logger" "This is a warning message"
+logger_check_str "test_logger" "This is an error message"
+logger_check_str "test_logger" "This is a debug message"
+logger_check_str "test_logger" "This is a custom log message."
+logger_check_str "test_logger" "this/file/does/not/exist' does not exist"
+logger_check_str "test_logger" "Command 'ls' exists"
+logger_check_str "test_logger" "Command 'thiscommanddoesnotexist' does not exist"
 logger_check_str "testTraps" "Script interrupted by user"
 rm -r "$TEST_LOG_DIR"
 
@@ -121,7 +121,7 @@ else
 fi
 
 # Intall zsh
-bash ./src/zsh/zshInstall.sh
+bash ./src/zsh/zsh_install.sh
 export PATH="$HOME/.local/bin:$PATH"
 source $HOME/.bashrc
 
@@ -135,7 +135,7 @@ else
 fi
 
 # Uninstall zsh
-bash ./src/zsh/zshUninstall.sh
+bash ./src/zsh/zsh_uninstall.sh
 source $HOME/.bashrc
 
 # Verify uninstallation
@@ -147,7 +147,7 @@ else
 fi
 
 # Install Go
-bash ./src/go_install.sh
+bash ./src/golang/go_install.sh
 source ~/.bashrc.user
 
 # Verify Go installation
@@ -159,7 +159,7 @@ else
 fi
 
 # Uninstall Go
-bash ./src/go_uninstall.sh
+bash ./src/golang/go_uninstall.sh
 
 # Verify Go uninstallation
 if [ ! -d "$HOME/go" ] && [ ! -d "$HOME/.local/go" ]; then
