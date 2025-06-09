@@ -1,4 +1,4 @@
-name: Main test
+name: Shellcheck
 on:
   push:
     branches: [ "**" ]
@@ -15,4 +15,5 @@ jobs:
 
     - name: Run tests as the developer
       run : |
-        test/test_dockerfile_main.sh
+        apt-get update && apt-get install -y --no-install-recommends shellcheck
+        test/test_shellcheck.sh
