@@ -47,6 +47,15 @@ rm -r "$TEST_LOG_DIR"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_TOP_DIR="${SCRIPT_DIR}"
 
+
+# source ${PROJECT_TOP_DIR}/src/bash/omb_install.sh
+# Omb::install || exit 1
+# Omb::verify_installation || exit 1
+
+# source ${PROJECT_TOP_DIR}/src/bash/omb_uninstall.sh
+# Omb::uninstall || exit 1
+# Omb::verify_uninstallation || exit 1
+
 # Source rust install file
 RUST_INSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/install_rust.sh"
 if [[ -f "${RUST_INSTALL_PATH}" ]]; then
