@@ -3,13 +3,34 @@ set -e
 
 ProjectName::install()
 {
+  if [[ "$1" == "bash" ]]; then
+    ################### BASH ###################
+    # Install Oh My Bash
+    if [[ -f "${PROJECT_TOP_DIR}/src/bash/omb_install.sh" ]]; then
+      source "${PROJECT_TOP_DIR}/src/bash/omb_install.sh"
+      Omb::install || exit 1
+    else
+      echo "Error: Could not find install_rust.sh at ${PROJECT_TOP_DIR}/src/bash/omb_install.sh"
+      exit 1
+    fi
+  elif [[ "$1" == "zsh" ]]; then
+    ################### ZSH ###################
+    # Install zsh
+    bash ./src/zsh/zsh_install.sh
+    export PATH="$HOME/.local/bin:$PATH"
+    source $HOME/.bashrc
+  else
+    echo "Error: Unsupported shell '$1'. Use 'bash' or 'zsh'." >&2
+    exit 1
+  fi
+
   ### RUST ###
   # Source rust install file
   RUST_INSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/install_rust.sh"
   if [[ -f "${RUST_INSTALL_PATH}" ]]; then
       source "${RUST_INSTALL_PATH}"
   else
-      echo "Error: Could not find install_rust.sh at ${RUST_INSTALL_PATH}"
+      echo "Error: Could not find omb_install.sh at ${RUST_INSTALL_PATH}"
       exit 1
   fi
   # Install rust with shell config file as an argument
@@ -31,14 +52,40 @@ ProjectName::install()
   ### GO ###
   # Install Go
   bash ./src/golang/go_install.sh
-  source ~/.bashrc.user
 }
 
 ProjectName::verify_installation()
 {
+  source ${SHELLRC_PATH}
+  source ~/.bashrc.user
+
+  if [[ "$1" == "bash" ]]; then
+    ################### BASH ###################
+    # Verify Oh My Bash
+    if [[ -f "${PROJECT_TOP_DIR}/src/bash/omb_install.sh" ]]; then
+      source "${PROJECT_TOP_DIR}/src/bash/omb_install.sh"
+      Omb::verify_installation || exit 1
+    else
+      echo "Error: Could not find omb_install.sh at ${PROJECT_TOP_DIR}/src/bash/omb_install.sh"
+      exit 1
+    fi
+  elif [[ "$1" == "zsh" ]]; then
+    ################### ZSH ###################
+    # Verify installation
+    if command -v zsh >/dev/null 2>&1; then
+      zsh --version
+      echo "✅ zsh successfully installed."
+    else
+      echo "❌ zsh not found after install."
+      exit 1
+    fi
+  else
+    echo "Error: Unsupported shell '$1'. Use 'bash' or 'zsh'." >&2
+    exit 1
+  fi
+
   ### RUST ###
   # Verify installation
-  source ${SHELLRC_PATH}
   if command -v rustc >/dev/null 2>&1; then
     rustc --version
   else
@@ -48,7 +95,6 @@ ProjectName::verify_installation()
 
   ### RUST TOOLS ###
   # Verify installation of rust tools
-  source ${SHELLRC_PATH}
   Rust::Cli::verify_installed || exit 1
 
   ### GO ###
@@ -63,6 +109,29 @@ ProjectName::verify_installation()
 
 ProjectName::uninstall()
 {
+  source ${SHELLRC_PATH}
+  source ~/.bashrc.user
+
+  if [[ "$1" == "bash" ]]; then
+    ################### BASH ###################
+    # Remove Oh My Bash
+    if [[ -f "${PROJECT_TOP_DIR}/src/bash/omb_uninstall.sh" ]]; then
+      source "${PROJECT_TOP_DIR}/src/bash/omb_uninstall.sh"
+      Omb::uninstall || exit 1
+    else
+      echo "Error: Could not find omb_uninstall.sh at ${PROJECT_TOP_DIR}/src/bash/omb_uninstall.sh"
+      exit 1
+    fi
+  elif [[ "$1" == "zsh" ]]; then
+    ################### ZSH ###################
+    # Uninstall zsh
+    bash ./src/zsh/zsh_uninstall.sh
+    source $HOME/.bashrc
+  else
+    echo "Error: Unsupported shell '$1'. Use 'bash' or 'zsh'." >&2
+    exit 1
+  fi
+
   ### RUST TOOLS ###
   # Source Rust Cli tools uninstall file
   RUST_TOOLS_UNINSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/uninstall_rust_cli_tools.sh"
@@ -94,9 +163,35 @@ ProjectName::uninstall()
 
 ProjectName::verify_uninstallation()
 {
+  source ${SHELLRC_PATH}
+  source ~/.bashrc.user
+
+  if [[ "$1" == "bash" ]]; then
+    ################### BASH ###################
+    # Remove Oh My Bash
+    if [[ -f "${PROJECT_TOP_DIR}/src/bash/omb_uninstall.sh" ]]; then
+      source "${PROJECT_TOP_DIR}/src/bash/omb_uninstall.sh"
+      Omb::verify_uninstallation || exit 1
+    else
+      echo "Error: Could not find omb_uninstall.sh at ${PROJECT_TOP_DIR}/src/bash/omb_uninstall.sh"
+      exit 1
+    fi
+  elif [[ "$1" == "zsh" ]]; then
+    ################### ZSH ###################
+    # Verify uninstallation
+    if [ ! -d "$HOME/.oh-my-zsh" ] && [ ! -d "$HOME/.local/bin/zsh" ]; then
+      echo "✅ zsh successfully uninstalled."
+    else
+      echo "❌ zsh files still exist after uninstall."
+      exit 1
+    fi
+  else
+    echo "Error: Unsupported shell '$1'. Use 'bash' or 'zsh'." >&2
+    exit 1
+  fi
+
   ### RUST TOOLS ###
   # Verify uninstallation of rust tools
-  source ${SHELLRC_PATH}
   Rust::Cli::verify_uninstalled || exit 1
 
   ### RUST ###

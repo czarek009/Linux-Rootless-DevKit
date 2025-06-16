@@ -4,7 +4,7 @@ set -e
 # GLOBAL PATHS FOR ENTIRE PROJECT
 # Parameter for setting shell config file that will be used by a user (bashrc/zshrc)
 # TODO: Needs to be modifiable by the initial script configuration.
-export SHELLRC_PATH="${HOME}/.bashrc"
+export SHELLRC_PATH="${HOME}/.bashrc.user"
 export BACKUP_PATH="${HOME}/.project-backup"
 export LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../scriptLogger" && pwd)/script_logger.sh"
 export SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -49,49 +49,19 @@ logger_check_str "testTraps" "Script interrupted by user"
 rm -r "$TEST_LOG_DIR"
 
 
+if [ ! -f ${SHELLRC_PATH} ]
+then
+  touch ${SHELLRC_PATH}
+fi
+
 source ./project_name.sh
 
-ProjectName::install
+ProjectName::install zsh
+ProjectName::verify_installation zsh
+ProjectName::uninstall zsh
+ProjectName::verify_uninstallation zsh
 
-################### BASH ###################
-# source ${PROJECT_TOP_DIR}/src/bash/omb_install.sh
-# Omb::install || exit 1
-# Omb::verify_installation || exit 1
-
-# source ${PROJECT_TOP_DIR}/src/bash/omb_uninstall.sh
-# Omb::uninstall || exit 1
-# Omb::verify_uninstallation || exit 1
-
-
-################### ZSH ###################
-# Intall zsh
-bash ./src/zsh/zsh_install.sh
-export PATH="$HOME/.local/bin:$PATH"
-source $HOME/.bashrc
-
-ProjectName::verify_installation
-
-# Verify installation
-if command -v zsh >/dev/null 2>&1; then
-  zsh --version
-  echo "✅ zsh successfully installed."
-else
-  echo "❌ zsh not found after install."
-  exit 1
-fi
-
-ProjectName::uninstall
-
-# Uninstall zsh
-bash ./src/zsh/zsh_uninstall.sh
-source $HOME/.bashrc
-
-ProjectName::verify_uninstallation
-
-# Verify uninstallation
-if [ ! -d "$HOME/.oh-my-zsh" ] && [ ! -d "$HOME/.local/bin/zsh" ]; then
-  echo "✅ zsh successfully uninstalled."
-else
-  echo "❌ zsh files still exist after uninstall."
-  exit 1
-fi
+ProjectName::install bash
+ProjectName::verify_installation bash
+ProjectName::uninstall bash
+ProjectName::verify_uninstallation bash
