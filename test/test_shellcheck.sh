@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# To ignore warnings globally, go to the main directory and add the appropriate comments to the .shellcheckrc file.
+# To ignore warnings globally, go to the .shellcheckrc file.
 # To run the script on all .sh files, choose the option: ./test_shellcheck.sh -p
 # To run the script for selected files in SELECTED_TESTS, choose the option: ./test_shellcheck.sh
 
@@ -21,12 +21,15 @@ declare -a SELECTED_TESTS=(
     "${PROJECT_TOP_DIR}/test/test_dockerfile_main.sh"
     "${PROJECT_TOP_DIR}/test/test_lib.sh"
     "${PROJECT_TOP_DIR}/test/test_shellcheck.sh"
-    "${PROJECT_TOP_DIR}/script.sh"
+    #"${PROJECT_TOP_DIR}/script.sh"
     "${PROJECT_TOP_DIR}/src/go_install.sh"
     "${PROJECT_TOP_DIR}/src/go_uninstall.sh"
-    "${PROJECT_TOP_DIR}/src/install_rust.sh"
-    "${PROJECT_TOP_DIR}/src/uninstall_rust.sh"
-    "${PROJECT_TOP_DIR}/src/zsh/zshInstall.sh"
+    "${PROJECT_TOP_DIR}/src/rust/install_rust.sh"
+    "${PROJECT_TOP_DIR}/src/rust/uninstall_rust.sh"
+    "${PROJECT_TOP_DIR}/src/rust/install_rust_cli_tools.sh"
+    "${PROJECT_TOP_DIR}/src/rust/uninstall_rust_cli_tools.sh"
+    "${PROJECT_TOP_DIR}/src/rust/rust_tools_utils.sh"
+    #"${PROJECT_TOP_DIR}/src/zsh/zshInstall.sh"
     "${PROJECT_TOP_DIR}/src/zsh/zshUninstall.sh"
     "${PROJECT_TOP_DIR}/src/scriptLogger/loggerTest.sh"
     "${PROJECT_TOP_DIR}/src/scriptLogger/scriptLogger.sh"
@@ -35,7 +38,7 @@ declare -a SELECTED_TESTS=(
 # Choose option for running
 if [[ "${1:-}" == "-p" ]]; then
     # Run shellcheck on all files in the project
-    mapfile -t all_files < <(find "$PROJECT_TOP_DIR" -type f -name "*.sh")
+    mapfile -t all_files < <(find "${PROJECT_TOP_DIR}" -type f -name "*.sh" || true)
 
     # Check if the array of files is empty
     if (( ${#all_files[@]} == 0 )); then

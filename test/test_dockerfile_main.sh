@@ -42,8 +42,8 @@ function Test::Docker::run_all_parallel()
         # Test ubuntu latest
         Test::Docker::run_test "${PROJECT_TOP_DIR}/test/docker/Dockerfile_ubuntu_latest" "docker_ubuntu_latest" &
         docker_pid_2=$!
-	
-	wait $docker_pid_1 $docker_pid_2
+
+	wait "${docker_pid_1}" "${docker_pid_2}"
     )
 
     if ! some_command; then
