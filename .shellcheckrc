@@ -3,3 +3,4 @@ disable=SC1091
 disable=SC1090
 disable=SC2312
 disable=SC2154
+disable=2012

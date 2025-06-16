@@ -4,11 +4,17 @@ set -e
 # GLOBAL PATHS FOR ENTIRE PROJECT
 # Parameter for setting shell config file that will be used by a user (bashrc/zshrc)
 # TODO: Needs to be modifiable by the initial script configuration.
-export SHELLRC_PATH="${HOME}/.bashrc.user"
-export BACKUP_PATH="${HOME}/.project-backup"
-export LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../scriptLogger" && pwd)/script_logger.sh"
-export SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export PROJECT_TOP_DIR="${SCRIPT_DIR}"
+SHELLRC_PATH="${HOME}/.bashrc.user"
+BACKUP_PATH="${HOME}/.project-backup"
+LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/src/scriptLogger" && pwd)/script_logger.sh"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_TOP_DIR="${SCRIPT_DIR}"
+
+export SHELLRC_PATH
+export BACKUP_PATH
+export LOGGER_PATH
+export SCRIPT_DIR
+export PROJECT_TOP_DIR
 
 # Run logger test sequence:
 echo "ℹ️ Running logger test sequence..."
@@ -49,9 +55,9 @@ logger_check_str "testTraps" "Script interrupted by user"
 rm -r "$TEST_LOG_DIR"
 
 
-if [ ! -f ${SHELLRC_PATH} ]
+if [ ! -f "${SHELLRC_PATH}" ]
 then
-  touch ${SHELLRC_PATH}
+  touch "${SHELLRC_PATH}"
 fi
 
 source ./project_name.sh

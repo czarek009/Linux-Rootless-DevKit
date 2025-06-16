@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-LOGGER_DIR_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-source $LOGGER_DIR_PATH/script_logger.sh
+LOGGER_DIR_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 || exit ; pwd -P )"
+source "${LOGGER_DIR_PATH}/script_logger.sh"
 
 
 Logger::log_info "Starting scriptLogger test..."
