@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 set -e
 
+# GLOBAL PATHS FOR ENTIRE PROJECT
 # Parameter for setting shell config file that will be used by a user (bashrc/zshrc)
 # TODO: Needs to be modifiable by the initial script configuration.
-SHELLRC_PATH="$HOME/.bashrc"
+export SHELLRC_PATH="${HOME}/.bashrc"
+export BACKUP_PATH="${HOME}/.project-backup"
+export LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../scriptLogger" && pwd)/script_logger.sh"
+export SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export PROJECT_TOP_DIR="${SCRIPT_DIR}"
 
 # Run logger test sequence:
 echo "ℹ️ Running logger test sequence..."
@@ -43,11 +48,12 @@ logger_check_str "test_logger" "Command 'thiscommanddoesnotexist' does not exist
 logger_check_str "testTraps" "Script interrupted by user"
 rm -r "$TEST_LOG_DIR"
 
-# Get the directory of this script
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_TOP_DIR="${SCRIPT_DIR}"
 
+source ./project_name.sh
 
+ProjectName::install
+
+################### BASH ###################
 # source ${PROJECT_TOP_DIR}/src/bash/omb_install.sh
 # Omb::install || exit 1
 # Omb::verify_installation || exit 1
@@ -56,83 +62,14 @@ PROJECT_TOP_DIR="${SCRIPT_DIR}"
 # Omb::uninstall || exit 1
 # Omb::verify_uninstallation || exit 1
 
-# Source rust install file
-RUST_INSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/install_rust.sh"
-if [[ -f "${RUST_INSTALL_PATH}" ]]; then
-    source "${RUST_INSTALL_PATH}"
-else
-    echo "Error: Could not find install_rust.sh at ${RUST_INSTALL_PATH}"
-    exit 1
-fi
 
-# Install rust with shell config file as an argument
-Rust::install ${SHELLRC_PATH} || exit 1
-
-# Verify installation
-source ${SHELLRC_PATH}
-if command -v rustc >/dev/null 2>&1; then
-  rustc --version
-else
-  echo "❌ rustc not found after install."
-  exit 1
-fi
-
-# Source Rust Cli tools install file
-RUST_TOOLS_INSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/install_rust_cli_tools.sh"
-if [[ -f "${RUST_TOOLS_INSTALL_PATH}" ]]; then
-    source "${RUST_TOOLS_INSTALL_PATH}"
-else
-    echo "Error: Could not find install_rust_cli_tools.sh at ${RUST_TOOLS_INSTALL_PATH}"
-    exit 1
-fi
-
-# Install all defined rust tools with shell config file as an argument
-Rust::Cli::install_all_tools ${SHELLRC_PATH} || exit 1
-
-# Verify installation of rust tools
-source ${SHELLRC_PATH}
-Rust::Cli::verify_installed || exit 1
-
-# Source Rust Cli tools uninstall file
-RUST_TOOLS_UNINSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/uninstall_rust_cli_tools.sh"
-if [[ -f "${RUST_TOOLS_UNINSTALL_PATH}" ]]; then
-    source "${RUST_TOOLS_UNINSTALL_PATH}"
-else
-    echo "Error: Could not find uninstall_rust_cli_tools.sh at ${RUST_TOOLS_UNINSTALL_PATH}"
-    exit 1
-fi
-
-# Uninstall all defined rust tools with shell config file as an argument
-Rust::Cli::uninstall_all_tools ${SHELLRC_PATH} || exit 1
-
-# Verify uninstallation of rust tools
-source ${SHELLRC_PATH}
-Rust::Cli::verify_uninstalled || exit 1
-
-# Source rust uninstall file
-RUST_UNINSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/uninstall_rust.sh"
-if [[ -f "${RUST_UNINSTALL_PATH}" ]]; then
-    source "${RUST_UNINSTALL_PATH}"
-else
-    echo "Error: Could not find uninstall_rust.sh at ${RUST_UNINSTALL_PATH}"
-    exit 1
-fi
-
-# Uninstall Rust with shell config file as an argument
-Rust::uninstall ${SHELLRC_PATH} || exit 1
-
-# Verify Rust uninstallation
-if [ ! -d "$HOME/.cargo" ] && [ ! -d "$HOME/.rustup" ]; then
-  echo "✅ Rust successfully uninstalled."
-else
-  echo "❌ Rust files still exist after uninstall."
-  exit 1
-fi
-
+################### ZSH ###################
 # Intall zsh
 bash ./src/zsh/zsh_install.sh
 export PATH="$HOME/.local/bin:$PATH"
 source $HOME/.bashrc
+
+ProjectName::verify_installation
 
 # Verify installation
 if command -v zsh >/dev/null 2>&1; then
@@ -143,37 +80,18 @@ else
   exit 1
 fi
 
+ProjectName::uninstall
+
 # Uninstall zsh
 bash ./src/zsh/zsh_uninstall.sh
 source $HOME/.bashrc
+
+ProjectName::verify_uninstallation
 
 # Verify uninstallation
 if [ ! -d "$HOME/.oh-my-zsh" ] && [ ! -d "$HOME/.local/bin/zsh" ]; then
   echo "✅ zsh successfully uninstalled."
 else
   echo "❌ zsh files still exist after uninstall."
-  exit 1
-fi
-
-# Install Go
-bash ./src/golang/go_install.sh
-source ~/.bashrc.user
-
-# Verify Go installation
-if command -v go >/dev/null 2>&1; then
-  go version
-else
-  echo "❌ Go not found after install."
-  exit 1
-fi
-
-# Uninstall Go
-bash ./src/golang/go_uninstall.sh
-
-# Verify Go uninstallation
-if [ ! -d "$HOME/go" ] && [ ! -d "$HOME/.local/go" ]; then
-  echo "✅ Go successfully uninstalled."
-else
-  echo "❌ Go files still exist after uninstall."
   exit 1
 fi
