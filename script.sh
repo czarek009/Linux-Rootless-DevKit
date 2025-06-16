@@ -56,12 +56,7 @@ fi
 
 source ./project_name.sh
 
-ProjectName::install zsh
-ProjectName::verify_installation zsh
-ProjectName::uninstall zsh
-ProjectName::verify_uninstallation zsh
-
-ProjectName::install bash
-ProjectName::verify_installation bash
-ProjectName::uninstall bash
-ProjectName::verify_uninstallation bash
+ProjectName::install "${SELECTED_SHELL}"
+ProjectName::verify_installation "${SELECTED_SHELL}"
+ProjectName::uninstall "${SELECTED_SHELL}"
+ProjectName::verify_uninstallation "${SELECTED_SHELL}"

@@ -5,6 +5,7 @@
 #   might cause a failure becasue of passing some part of shell_init into flags.
 RUST_CLI_TOOLS=(
     "du-dust:dust:--locked"
+    # TODO: Uncomment this. This is temporary, so that tests run faster
     # "tealdeer:tldr:--locked"
     # "ripgrep:rg:--locked"
     # "gitui:gitui:--locked"

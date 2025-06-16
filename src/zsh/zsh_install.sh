@@ -8,8 +8,9 @@
 #set -e
 # Show executed commanmds:
 #set -x
+
 LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../scriptLogger" && pwd)/script_logger.sh"
-source "$LOGGER_PATH"
+source "${LOGGER_PATH}"
 PRECONFIGURED_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/preconfigured" && pwd)"
 
 Zsh::get_latest_available_zsh_version() 

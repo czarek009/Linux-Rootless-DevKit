@@ -14,7 +14,12 @@ jobs:
       - name: Environment Preparation
         uses: actions/checkout@v3
 
-      - name: Build and run Docker container
+      - name: Build and run Docker container for ZSH
         run: |
-          docker build -f test/docker/Dockerfile_ubuntu_latest -t ubuntu_latest-image .
-          docker run --rm ubuntu_latest-image
+          docker build --file test/docker/Dockerfile_ubuntu_latest --tag ubuntu_latest-image .
+          docker run -e SELECTED_SHELL="zsh" --rm ubuntu_latest-image
+
+      - name: Build and run Docker container for BASH
+        run: |
+          docker build --file test/docker/Dockerfile_ubuntu_latest --tag ubuntu_latest-image .
+          docker run -e SELECTED_SHELL="bash" --rm ubuntu_latest-image
