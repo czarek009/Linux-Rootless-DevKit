@@ -2,7 +2,7 @@
 
 BACKUP_PATH="${HOME}/.project-backup"
 SHELLRC_PATH="$HOME/.bashrc"
-LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../scriptLogger" && pwd)/script_logger.sh"
+LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../logger" && pwd)/script_logger.sh"
 source "${LOGGER_PATH}"
 
 

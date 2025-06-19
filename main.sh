@@ -6,7 +6,7 @@ set -e
 # TODO: Needs to be modifiable by the initial script configuration.
 SHELLRC_PATH="${HOME}/.bashrc.user"
 BACKUP_PATH="${HOME}/.project-backup"
-LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/src/scriptLogger" && pwd)/script_logger.sh"
+LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/src/logger" && pwd)/script_logger.sh"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_TOP_DIR="${SCRIPT_DIR}"
 
@@ -18,8 +18,8 @@ export PROJECT_TOP_DIR
 
 # Run logger test sequence:
 echo "ℹ️ Running logger test sequence..."
-TEST_LOG_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )/src/scriptLogger/logs"
-bash ./src/scriptLogger/test_logger.sh
+TEST_LOG_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )/src/logger/logs"
+bash ./src/logger/test_logger.sh
 wait
 
 # Verify logger results:
@@ -43,7 +43,7 @@ logger_check_str()
     exit 1
   fi
 }
-logger_check_str "test_logger" "Starting scriptLogger test"
+logger_check_str "test_logger" "Starting logger test"
 logger_check_str "test_logger" "This is a warning message"
 logger_check_str "test_logger" "This is an error message"
 logger_check_str "test_logger" "This is a debug message"

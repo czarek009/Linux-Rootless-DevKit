@@ -5,15 +5,14 @@
 #   might cause a failure becasue of passing some part of shell_init into flags.
 RUST_CLI_TOOLS=(
     "du-dust:dust:--locked"
-    # TODO: Uncomment this. This is temporary, so that tests run faster
-    # "tealdeer:tldr:--locked"
-    # "ripgrep:rg:--locked"
-    # "gitui:gitui:--locked"
-    # "git-delta:delta:--locked"
-    # "atuin:atuin:--locked:eval \"\$(atuin init bash --disable-up-arrow)\""
-    # "eza:eza:--locked"
-    # "tokei:tokei:--locked"
-    # "procs:procs:--locked"
+    "tealdeer:tldr:--locked"
+    "ripgrep:rg:--locked"
+    "gitui:gitui:--locked"
+    "git-delta:delta:--locked"
+    "atuin:atuin:--locked:eval \"\$(atuin init bash --disable-up-arrow)\""
+    "eza:eza:--locked"
+    "tokei:tokei:--locked"
+    "procs:procs:--locked"
 
     #"zoxide:zoxide:--locked:eval \"\$(zoxide init bash)\""
 )

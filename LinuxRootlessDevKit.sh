@@ -10,7 +10,7 @@ LinuxRootlessDevKit::install()
       source "${PROJECT_TOP_DIR}/src/bash/omb_install.sh"
       Omb::install || exit 1
     else
-      echo "Error: Could not find install_rust.sh at ${PROJECT_TOP_DIR}/src/bash/omb_install.sh"
+      echo "Error: Could not find rust_install.sh at ${PROJECT_TOP_DIR}/src/bash/omb_install.sh"
       exit 1
     fi
   elif [[ "$1" == "zsh" ]]; then
@@ -26,7 +26,7 @@ LinuxRootlessDevKit::install()
 
   ### RUST ###
   # Source rust install file
-  RUST_INSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/install_rust.sh"
+  RUST_INSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/rust_install.sh"
   if [[ -f "${RUST_INSTALL_PATH}" ]]; then
       source "${RUST_INSTALL_PATH}"
   else
@@ -39,11 +39,11 @@ LinuxRootlessDevKit::install()
 
   ### RUST TOOLS ###
   # Source Rust Cli tools install file
-  RUST_TOOLS_INSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/install_rust_cli_tools.sh"
+  RUST_TOOLS_INSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/rust_install_cli_tools.sh"
   if [[ -f "${RUST_TOOLS_INSTALL_PATH}" ]]; then
       source "${RUST_TOOLS_INSTALL_PATH}"
   else
-      echo "Error: Could not find install_rust_cli_tools.sh at ${RUST_TOOLS_INSTALL_PATH}"
+      echo "Error: Could not find rust_install_cli_tools.sh at ${RUST_TOOLS_INSTALL_PATH}"
       exit 1
   fi
   # Install all defined rust tools with shell config file as an argument
@@ -134,11 +134,11 @@ LinuxRootlessDevKit::uninstall()
 
   ### RUST TOOLS ###
   # Source Rust Cli tools uninstall file
-  RUST_TOOLS_UNINSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/uninstall_rust_cli_tools.sh"
+  RUST_TOOLS_UNINSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/rust_uninstall_cli_tools.sh"
   if [[ -f "${RUST_TOOLS_UNINSTALL_PATH}" ]]; then
       source "${RUST_TOOLS_UNINSTALL_PATH}"
   else
-      echo "Error: Could not find uninstall_rust_cli_tools.sh at ${RUST_TOOLS_UNINSTALL_PATH}"
+      echo "Error: Could not find rust_uninstall_cli_tools.sh at ${RUST_TOOLS_UNINSTALL_PATH}"
       exit 1
   fi
   # Uninstall all defined rust tools with shell config file as an argument
@@ -146,11 +146,11 @@ LinuxRootlessDevKit::uninstall()
 
   ### RUST ###
   # Source rust uninstall file
-  RUST_UNINSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/uninstall_rust.sh"
+  RUST_UNINSTALL_PATH="${PROJECT_TOP_DIR}/src/rust/rust_uninstall.sh"
   if [[ -f "${RUST_UNINSTALL_PATH}" ]]; then
       source "${RUST_UNINSTALL_PATH}"
   else
-      echo "Error: Could not find uninstall_rust.sh at ${RUST_UNINSTALL_PATH}"
+      echo "Error: Could not find rust_uninstall.sh at ${RUST_UNINSTALL_PATH}"
       exit 1
   fi
   # Uninstall Rust with shell config file as an argument
