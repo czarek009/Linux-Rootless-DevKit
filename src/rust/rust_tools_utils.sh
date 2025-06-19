@@ -13,6 +13,7 @@ RUST_CLI_TOOLS=(
     "eza:eza:--locked"
     "tokei:tokei:--locked"
     "procs:procs:--locked"
+
     #"zoxide:zoxide:--locked:eval \"\$(zoxide init bash)\""
 )
 
