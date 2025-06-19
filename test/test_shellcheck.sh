@@ -20,11 +20,11 @@ fi
 declare -a SELECTED_TESTS=(
     "${PROJECT_TOP_DIR}/src/bash/omb_install.sh"
     "${PROJECT_TOP_DIR}/src/bash/omb_uninstall.sh"
-    "${PROJECT_TOP_DIR}/project_name.sh"
+    "${PROJECT_TOP_DIR}/LinuxRootlessDevKit.sh
     "${PROJECT_TOP_DIR}/test/test_dockerfile_main.sh"
     "${PROJECT_TOP_DIR}/test/test_lib.sh"
     "${PROJECT_TOP_DIR}/test/test_shellcheck.sh"
-    "${PROJECT_TOP_DIR}/script.sh"
+    "${PROJECT_TOP_DIR}/main.sh"
     "${PROJECT_TOP_DIR}/src/golang/go_install.sh"
     "${PROJECT_TOP_DIR}/src/golang/go_uninstall.sh"
     "${PROJECT_TOP_DIR}/src/rust/install_rust.sh"

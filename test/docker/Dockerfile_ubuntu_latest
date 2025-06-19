@@ -56,4 +56,4 @@ RUN chmod +x \
 # To simulate the real user environment, we will use the -l (login) option to force the shell to be a login shell.
 #     This will source the profiile file
 
-CMD ["bash", "-l", "-i", "./script.sh"]
+CMD ["bash", "-l", "-i", "./main.sh"]

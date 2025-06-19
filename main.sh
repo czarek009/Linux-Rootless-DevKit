@@ -60,9 +60,9 @@ then
   touch "${SHELLRC_PATH}"
 fi
 
-source ./project_name.sh
+source ./LinuxRootlessDevKit.sh
 
-ProjectName::install "${SELECTED_SHELL}"
-ProjectName::verify_installation "${SELECTED_SHELL}"
-ProjectName::uninstall "${SELECTED_SHELL}"
-ProjectName::verify_uninstallation "${SELECTED_SHELL}"
+LinuxRootlessDevKit::install "${SELECTED_SHELL}"
+LinuxRootlessDevKit::verify_installation "${SELECTED_SHELL}"
+LinuxRootlessDevKit::uninstall "${SELECTED_SHELL}"
+LinuxRootlessDevKit::verify_uninstallation "${SELECTED_SHELL}"

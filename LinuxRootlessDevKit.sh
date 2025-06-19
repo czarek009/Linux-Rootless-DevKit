@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-ProjectName::install()
+LinuxRootlessDevKit::install()
 {
   if [[ "$1" == "bash" ]]; then
     ################### BASH ###################
@@ -54,7 +54,7 @@ ProjectName::install()
   bash ./src/golang/go_install.sh
 }
 
-ProjectName::verify_installation()
+LinuxRootlessDevKit::verify_installation()
 {
   source "${SHELLRC_PATH}"
   source ~/.bashrc.user
@@ -107,7 +107,7 @@ ProjectName::verify_installation()
   fi
 }
 
-ProjectName::uninstall()
+LinuxRootlessDevKit::uninstall()
 {
   source "${SHELLRC_PATH}"
   source ~/.bashrc.user
@@ -161,7 +161,7 @@ ProjectName::uninstall()
   bash ./src/golang/go_uninstall.sh
 }
 
-ProjectName::verify_uninstallation()
+LinuxRootlessDevKit::verify_uninstallation()
 {
   source "${SHELLRC_PATH}"
   source ~/.bashrc.user
