@@ -59,6 +59,7 @@ Zsh::install()
 
     # Set $HOME/.local/bin in PATH:
     if ! echo "${PATH}" | grep -q "${HOME}/.local/bin"; then
+        # shellcheck disable=SC2016
         echo 'export PATH="$HOME/.local/bin:$PATH"' >> "${HOME}/.bashrc"
         export PATH="${HOME}/.local/bin:${PATH}"
         source "${HOME}"/.bashrc
@@ -150,6 +151,8 @@ Zsh::install_theme()
     fi
 
     if ! grep -q "source \$ZSH/oh-my-zsh.sh" "${HOME}"/.zshrc; then
+        # shellcheck disable=SC2129
+        # shellcheck disable=SC2140
         echo "export ZSH=""${HOME}"/.oh-my-zsh"" >> "${HOME}"/.zshrc
         echo "plugins=()" >> "${HOME}"/.zshrc
         echo "source ${ZSH}/oh-my-zsh.sh" >> "${HOME}"/.zshrc
@@ -163,6 +166,7 @@ Zsh::install_theme()
         Logger::log_warning "No preconfigured .p10k.zsh found in preconfigured directory"
     fi
 
+    # shellcheck disable=SC2016
     echo '# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.

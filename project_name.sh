@@ -18,7 +18,7 @@ ProjectName::install()
     # Install zsh
     bash ./src/zsh/zsh_install.sh
     export PATH="$HOME/.local/bin:$PATH"
-    source $HOME/.bashrc
+    source "$HOME/.bashrc"
   else
     echo "Error: Unsupported shell '$1'. Use 'bash' or 'zsh'." >&2
     exit 1
@@ -34,8 +34,8 @@ ProjectName::install()
       exit 1
   fi
   # Install rust with shell config file as an argument
-  Rust::install ${SHELLRC_PATH} || exit 1
-  source ${SHELLRC_PATH}
+  Rust::install "${SHELLRC_PATH}" || exit 1
+  source "${SHELLRC_PATH}"
 
   ### RUST TOOLS ###
   # Source Rust Cli tools install file
@@ -47,7 +47,7 @@ ProjectName::install()
       exit 1
   fi
   # Install all defined rust tools with shell config file as an argument
-  Rust::Cli::install_all_tools ${SHELLRC_PATH} || exit 1
+  Rust::Cli::install_all_tools "${SHELLRC_PATH}" || exit 1
 
   ### GO ###
   # Install Go
@@ -56,7 +56,7 @@ ProjectName::install()
 
 ProjectName::verify_installation()
 {
-  source ${SHELLRC_PATH}
+  source "${SHELLRC_PATH}"
   source ~/.bashrc.user
 
   if [[ "$1" == "bash" ]]; then
@@ -109,7 +109,7 @@ ProjectName::verify_installation()
 
 ProjectName::uninstall()
 {
-  source ${SHELLRC_PATH}
+  source "${SHELLRC_PATH}"
   source ~/.bashrc.user
 
   if [[ "$1" == "bash" ]]; then
@@ -126,7 +126,7 @@ ProjectName::uninstall()
     ################### ZSH ###################
     # Uninstall zsh
     bash ./src/zsh/zsh_uninstall.sh
-    source $HOME/.bashrc
+    source "$HOME/.bashrc"
   else
     echo "Error: Unsupported shell '$1'. Use 'bash' or 'zsh'." >&2
     exit 1
@@ -142,7 +142,7 @@ ProjectName::uninstall()
       exit 1
   fi
   # Uninstall all defined rust tools with shell config file as an argument
-  Rust::Cli::uninstall_all_tools ${SHELLRC_PATH} || exit 1
+  Rust::Cli::uninstall_all_tools "${SHELLRC_PATH}" || exit 1
 
   ### RUST ###
   # Source rust uninstall file
@@ -154,7 +154,7 @@ ProjectName::uninstall()
       exit 1
   fi
   # Uninstall Rust with shell config file as an argument
-  Rust::uninstall ${SHELLRC_PATH} || exit 1
+  Rust::uninstall "${SHELLRC_PATH}" || exit 1
 
   ### GO ###
   # Uninstall Go
@@ -163,7 +163,7 @@ ProjectName::uninstall()
 
 ProjectName::verify_uninstallation()
 {
-  source ${SHELLRC_PATH}
+  source "${SHELLRC_PATH}"
   source ~/.bashrc.user
 
   if [[ "$1" == "bash" ]]; then

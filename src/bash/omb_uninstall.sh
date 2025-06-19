@@ -3,14 +3,14 @@
 BACKUP_PATH="${HOME}/.project-backup"
 SHELLRC_PATH="$HOME/.bashrc"
 LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../scriptLogger" && pwd)/script_logger.sh"
-source "$LOGGER_PATH"
+source "${LOGGER_PATH}"
 
 
 Omb::uninstall()
 {
-  cp $HOME/.project-backup/.bashrc.omb-backup* $HOME
+  cp "${HOME}"/.project-backup/.bashrc.omb-backup* "${HOME}"
 
-  $HOME/.oh-my-bash/tools/uninstall.sh <<< "Y"
+  "${HOME}"/.oh-my-bash/tools/uninstall.sh <<< "Y"
 }
 
 Omb::verify_uninstallation()
@@ -21,10 +21,10 @@ Omb::verify_uninstallation()
     Logger::log_info "✔ Oh My Bash removed successfully"
   fi
 
-  BACKUP_FILE=$(find ${BACKUP_PATH} -maxdepth 1 -type f -name ".bashrc.omb-backup-*" -printf "%T@ %p\n" 2>/dev/null | sort -nr | cut -d' ' -f2- | head -n 1)
+  BACKUP_FILE=$(find "${BACKUP_PATH}" -maxdepth 1 -type f -name ".bashrc.omb-backup-*" -printf "%T@ %p\n" 2>/dev/null | sort -nr | cut -d' ' -f2- | head -n 1)
 
-  cmp -s ${SHELLRC_PATH} ${BACKUP_FILE}
-  if [ $? -ne 0 ]; then
+  if ! cmp -s "${SHELLRC_PATH}" "${BACKUP_FILE}"
+  then
     Logger::log_error ".bashrc not restored"
   else
     Logger::log_info "✔ .bashrc restored successfully"
