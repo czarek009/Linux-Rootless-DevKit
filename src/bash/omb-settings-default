@@ -1,0 +1,47 @@
+OSH_THEME="powerline-multiline"
+ 
+DISABLE_AUTO_UPDATE="true"
+DISABLE_AUTO_TITLE="true"
+ENABLE_CORRECTION="true"
+COMPLETION_WAITING_DOTS="true"
+DISABLE_UNTRACKED_FILES_DIRTY="true"
+SCM_GIT_DISABLE_UNTRACKED_DIRTY="true"
+SCM_GIT_IGNORE_UNTRACKED="true"
+OMB_DEFAULT_ALIASES="check"
+OMB_USE_SUDO="false"
+# some old THEMEs require that line below to disable sudo
+export THEME_CHECK_SUDO="false"
+OMB_PROMPT_SHOW_PYTHON_VENV="true"
+ 
+# Which completions would you like to load? (completions can be found in ~/.oh-my-bash/completions/*)
+completions=(
+    docker
+    docker-compose
+    docker-machine
+    git
+    go
+    makefile
+    maven
+    pip
+    pip3
+    ssh
+    tmux
+)
+ 
+# Which aliases would you like to load? (aliases can be found in ~/.oh-my-bash/aliases/*)
+aliases=(
+)
+ 
+# Which plugins would you like to load? (plugins can be found in ~/.oh-my-bash/plugins/*)
+plugins=(
+  bashmarks
+  colored-man-pages
+)
+ 
+# BLE should be always before oh-my-bash
+source ~/.local/share/blesh/ble.sh
+source "$OSH"/oh-my-bash.sh
+ 
+# Workaround to disable ALL git stats in ALL themes
+git config --global oh-my-bash.hide-status 1
+git config --global oh-my-bash.hide-dirty 1
