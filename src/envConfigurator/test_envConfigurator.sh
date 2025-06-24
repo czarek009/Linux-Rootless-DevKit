@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-ENVCONFIGURATOR_DIR_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-source $ENVCONFIGURATOR_DIR_PATH/envConfigurator.sh
+ENVCONFIGURATOR_DIR_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 || exit ; pwd -P )"
+source "$ENVCONFIGURATOR_DIR_PATH/envConfigurator.sh"
 
 COLOR_RED="\033[1;31m"
 COLOR_GREEN="\033[1;32m"
