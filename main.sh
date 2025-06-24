@@ -16,6 +16,11 @@ export LOGGER_PATH
 export SCRIPT_DIR
 export PROJECT_TOP_DIR
 
+# Run envConfigurator test sequence:
+echo "ℹ️ Running envConfigurator test sequence..."
+bash ./src/envConfigurator/test_envConfigurator.sh
+wait
+
 # Run logger test sequence:
 echo "ℹ️ Running logger test sequence..."
 TEST_LOG_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )/src/logger/logs"
