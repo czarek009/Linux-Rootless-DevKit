@@ -16,10 +16,9 @@ jobs:
 
       - name: Build and run Docker container for ZSH
         run: |
-          docker build --file test/docker/Dockerfile_redhat_ubi8 --tag redhat_ubi8-image .
+          DOCKER_BUILDKIT=1 docker build --file test/docker/Dockerfile_redhat_ubi8 --tag redhat_ubi8-image .
           docker run -e SELECTED_SHELL="zsh" --rm redhat_ubi8-image
 
       - name: Build and run Docker container for BASH
         run: |
-          docker build --file test/docker/Dockerfile_redhat_ubi8 --tag redhat_ubi8-image .
           docker run -e SELECTED_SHELL="bash" --rm redhat_ubi8-image
