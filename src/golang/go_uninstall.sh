@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 remove_dirs() {
 	echo "Removing Go directories"

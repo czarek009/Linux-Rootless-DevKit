@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 download() {
 	local go_version="${1}"
@@ -43,7 +43,7 @@ main() {
 }
 
 # Run main only if script is executed directly
-# Usage : ./go_install.sh <go_version> (default 1.24.3)
+# Usage : ./golang/go_install.sh <go_version> (default 1.24.3)
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 	if [[ $# -lt 1 ]]; then
 		main "1.24.3"
