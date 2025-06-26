@@ -16,5 +16,5 @@ jobs:
 
       - name: Build and run docker container
         run: |
-          docker build --file test/docker/Dockerfile_redhat_ubi8 --tag redhat_ubi8-image .
-          docker run --rm redhat_ubi8-image
+          docker build --progress=plain --no-cache --file test/docker/Dockerfile_redhat_ubi8 --tag test-redhat:ubi8 .
+          docker run --rm test-redhat:ubi8

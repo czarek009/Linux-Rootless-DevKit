@@ -20,6 +20,8 @@ function Test::Docker::run_test()
     local docker_tag="${2}"
 
     DOCKER_BUILDKIT=1 docker build --no-cache --file "${dockerfile_path}" --tag "${docker_tag}" "${PROJECT_TOP_DIR}" || return 1
+
+    # TODO check if the TTY is available, if yes then use -t -i flag
     docker run --rm "${docker_tag}" || return 1
 }
 
@@ -43,7 +45,7 @@ function Test::Docker::run_all_parallel()
         Test::Docker::run_test "${PROJECT_TOP_DIR}/test/docker/Dockerfile_ubuntu_latest" "docker_ubuntu_latest" &
         docker_pid_2=$!
 
-	wait "${docker_pid_1}" "${docker_pid_2}"
+        wait "${docker_pid_1}" "${docker_pid_2}"
     )
 
     if ! some_command; then
@@ -55,8 +57,8 @@ function Test::Docker::run_all_parallel()
 function Test::Docker::run_all()
 {
     ####################################### TEST UNIT #######################################
-    Test::Docker::run_test "${PROJECT_TOP_DIR}/test/docker/Dockerfile_redhat_ubi8" "docker_redhat_ubi8" || return 1
-    Test::Docker::run_test "${PROJECT_TOP_DIR}/test/docker/Dockerfile_ubuntu_latest" "docker_ubuntu_latest" || return 1
+    Test::Docker::run_test "${PROJECT_TOP_DIR}/test/docker/Dockerfile_redhat_ubi8" "test-redhat:ubi8" || return 1
+    Test::Docker::run_test "${PROJECT_TOP_DIR}/test/docker/Dockerfile_ubuntu_latest" "test-ubuntu:latest" || return 1
 }
 
 # If user specifies the test to run in parallel by using -p flag then run the tests in parallel

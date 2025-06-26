@@ -17,5 +17,5 @@ jobs:
 
     - name: Build and run Docker container
       run: |
-        docker build -f test/docker/Dockerfile_ubuntu_latest -t ubuntu_latest-image .
-        docker run --rm ubuntu_latest-image
+        docker build --progress=plain --no-cache --file test/docker/Dockerfile_ubuntu_latest --tag test-ubuntu:latest .
+        docker run --rm test-ubuntu:latest
