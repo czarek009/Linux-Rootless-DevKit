@@ -1,0 +1,65 @@
+FROM registry.access.redhat.com/ubi8/ubi:8.10 AS tester
+
+USER root
+
+# Install build dependencies
+RUN dnf -y update && \
+    dnf -y install --setopt=tsflags=nodocs \
+        bash \
+        gcc \
+        gcc-c++ \
+        curl \
+        tar \
+        xz \
+        openssl-devel \
+        zlib-devel \
+        git \
+        make \
+        ncurses-devel \
+        perl \
+        fontconfig \
+        glibc-locale-source \
+        glibc-langpack-en && \
+    dnf clean all &&\
+    rm -rf /var/cache/dnf /tmp/* /root/.cache
+
+RUN localedef -i en_US -f UTF-8 en_US.UTF-8
+
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+
+# =============== Install additional tools (unavailable in free redhat version) ===============
+
+RUN CMAKE_LATEST_TAG=$(git ls-remote --tags --refs https://github.com/Kitware/CMake.git | \
+                       awk '{print $2}' | \
+                       awk -F '/' '{print $3}' | \
+                       grep -v "rc" | \
+                       sort -Vr | \
+                       head -n 1) && \
+    CMAKE_LATEST_VERSION=$(echo ${CMAKE_LATEST_TAG} | sed 's/^v//') && \
+    mkdir -p /opt/cmake && \
+    curl -LO https://github.com/Kitware/CMake/releases/download/${CMAKE_LATEST_TAG}/cmake-${CMAKE_LATEST_VERSION}-linux-x86_64.sh && \
+    chmod +x cmake-${CMAKE_LATEST_VERSION}-linux-x86_64.sh && \
+    ./cmake-${CMAKE_LATEST_VERSION}-linux-x86_64.sh --skip-license --prefix=/opt/cmake && \
+    ln -s /opt/cmake/bin/* /usr/local/bin/ && \
+    rm cmake-${CMAKE_LATEST_VERSION}-linux-x86_64.sh
+
+# ===========================================================================================
+
+COPY . /app
+WORKDIR /app
+
+# =============== Simulate user without root privileges (no sudo) ===============
+
+RUN groupadd -f -g 1111 tester-wo-root && \
+    useradd -m -u 1111 -g tester-wo-root tester-wo-root
+
+RUN chgrp -R tester-wo-root /app /tmp && \
+    chmod -R g+rwx /app /tmp
+
+USER tester-wo-root
+
+# ===============================================================================
+
+ENTRYPOINT ["bash", "--login", "-i", "./main.sh"]

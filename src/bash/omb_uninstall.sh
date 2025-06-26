@@ -27,7 +27,7 @@ Omb::verify_uninstallation()
 
   BACKUP_FILE=$(find "${BACKUP_PATH}" -maxdepth 1 -type f -name ".bashrc.omb-backup-*" -printf "%T@ %p\n" 2>/dev/null | sort -nr | cut -d' ' -f2- | head -n 1)
 
-  if ! cmp -s "${SHELLRC_PATH}" "${BACKUP_FILE}"
+  if ! diff -q "$SHELLRC_PATH" "$BACKUP_FILE" >/dev/null 2>&1
   then
     Logger::log_error ".bashrc not restored"
   else
