@@ -16,5 +16,6 @@ jobs:
 
       - name: Run shellcheck script
         run : |
-          apt-get update && apt-get install -y --no-install-recommends shellcheck
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends shellcheck
           test/test_shellcheck.sh -p
