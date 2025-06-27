@@ -89,6 +89,35 @@ else
     exit 1
 fi
 
+# Test EnvConfigurator::_write_if_not_present
+echo -e "\n${COLOR_BLUE}Checking if EnvConfigurator::_write_if_not_present adds a new line if it doesn't exist ${COLOR_RESET}"
+EnvConfigurator::_write_if_not_present "test.txt" "This is a write if not present test line"
+if [[ $(grep -c "This is a write if not present test line" "test.txt") -eq 1 ]]; then
+    echo -e "${COLOR_GREEN}EnvConfigurator::_write_if_not_present works correctly${COLOR_RESET}"
+else
+    echo -e "${COLOR_RED}EnvConfigurator::_write_if_not_present failed to add the line${COLOR_RESET}"
+    exit 1
+fi
+
+echo -e "\n${COLOR_BLUE}Checking if EnvConfigurator::_write_if_not_present does not add a line that already exists ${COLOR_RESET}"
+EnvConfigurator::_write_if_not_present "test.txt" "This is the fifth new line"
+if ! [[ $(grep -c "This is a write if not present test line" "test.txt") -eq 1 ]]; then
+    echo -e "${COLOR_RED}EnvConfigurator::_write_if_not_present added a duplicate line${COLOR_RESET}"
+    exit 1
+else
+    echo -e "${COLOR_GREEN}EnvConfigurator::_write_if_not_present did not add a duplicate line${COLOR_RESET}"
+fi  
+
+# Test EnvConfigurator::_insert
+echo -e "\n${COLOR_BLUE}Checking if EnvConfigurator::_insert adds a new line at the end of the file ${COLOR_RESET}"
+EnvConfigurator::_insert "test.txt" "This is the line inserted at the 2 position" 2
+if [[ "$(sed -n '2p' test.txt)" == "This is the line inserted at the 2 position" ]]; then
+    echo -e "${COLOR_GREEN}EnvConfigurator::_insert inserted the line at position 2 correctly${COLOR_RESET}"
+else
+    echo -e "${COLOR_RED}EnvConfigurator::_insert failed to insert the line at position 2${COLOR_RESET}"
+    exit 1
+fi
+
 # Test EnvConfigurator::_exists
 Logger::log_info "Checking if EnvConfigurator::_exists finds text in the file"
 line=$(EnvConfigurator::_exists "test.txt" "This is the second new line")
