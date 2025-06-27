@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-# GLOBAL library: env_variables and  envConfigrautor
+START_TIME=$(date +"%Y-%m-%d %H:%M:%S")
+# GLOBAL PATHS FOR ENTIRE PROJECT
 # Parameter for setting shell config file that will be used by a user (bashrc/zshrc)
 # TODO: Needs to be modifiable by the initial script configuration.
 
@@ -66,5 +67,18 @@ source ./LinuxRootlessDevKit.sh
 
 LinuxRootlessDevKit::install "${SELECTED_SHELL}"
 LinuxRootlessDevKit::verify_installation "${SELECTED_SHELL}"
+
+Logger::log_info "ℹ️ Files created or modified in $HOME after install started:"
+find "$HOME" -type d \( -path "$HOME/.cache" -o -path "$HOME/.var" \) -prune -o \
+-type f \( -newermt "$START_TIME" -o -newerct "$START_TIME" \) -print 2>/dev/null \
+> "new_modified_home_files_after_install_${SELECTED_SHELL}.txt"
+wc -l < "new_modified_home_files_after_install_${SELECTED_SHELL}.txt"
+
 LinuxRootlessDevKit::uninstall "${SELECTED_SHELL}"
 LinuxRootlessDevKit::verify_uninstallation "${SELECTED_SHELL}"
+
+Logger::log_info "ℹ️Files created or modified in $HOME after install and uninstall:"
+find "$HOME" -type d \( -path "$HOME/.cache" -o -path "$HOME/.var" \) -prune -o \
+-type f \( -newermt "$START_TIME" -o -newerct "$START_TIME" \) -print 2>/dev/null \
+> "new_modified_home_files_after_install_unistall_${SELECTED_SHELL}.txt"
+wc -l < "new_modified_home_files_after_install_unistall_${SELECTED_SHELL}.txt"
