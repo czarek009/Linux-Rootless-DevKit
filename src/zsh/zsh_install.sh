@@ -5,13 +5,15 @@
 # without sudo access
 
 # Exit if non-zero status:
-#set -e
+set -e
 # Show executed commanmds:
-#set -x
+set -x
 
 LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../logger" && pwd)/script_logger.sh"
-source "${LOGGER_PATH}"
+ENV_CONFIGURATOR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../envConfigurator" && pwd)/envConfigurator.sh"
 PRECONFIGURED_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/preconfigured" && pwd)"
+source "${LOGGER_PATH}"
+source "${ENV_CONFIGURATOR_PATH}"
 
 Zsh::get_latest_available_zsh_version() 
 {
@@ -57,12 +59,19 @@ Zsh::install()
     Logger::log_info "Installing zsh"
     make install > /dev/null 2>&1
 
+    if [[ ! -f "${HOME}/.bashrc.user" ]]; then
+        Logger::log_info "Creating ${HOME}/.bashrc.user"
+        touch "${HOME}/.bashrc.user"
+    else
+        Logger::log_info "${HOME}/.bashrc.user already exists"
+    fi
+
     # Set $HOME/.local/bin in PATH:
     if ! echo "${PATH}" | grep -q "${HOME}/.local/bin"; then
         # shellcheck disable=SC2016
-        echo 'export PATH="$HOME/.local/bin:$PATH"' >> "${HOME}/.bashrc"
+        EnvConfigurator::_write_if_not_present "${HOME}/.bashrc.user" 'export PATH="$HOME/.local/bin:$PATH"'
         export PATH="${HOME}/.local/bin:${PATH}"
-        source "${HOME}"/.bashrc
+        source "${HOME}"/.bashrc.user
     fi
 
     # Install oh-my-zsh
@@ -86,15 +95,12 @@ Zsh::install_plugins()
 {
     Logger::log_info "Installing oh-my-zsh plugins"
 
-    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}"/plugins/zsh-syntax-highlighting > /dev/null 2>&1
-    git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}"/plugins/zsh-autosuggestions > /dev/null 2>&1
-    git clone https://github.com/MichaelAquilina/zsh-you-should-use.git "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}"/plugins/you-should-use > /dev/null 2>&1
-    git clone https://github.com/zsh-users/zsh-history-substring-search "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}"/plugins/zsh-history-substring-search > /dev/null 2>&1
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" > /dev/null 2>&1
+    git clone https://github.com/zsh-users/zsh-autosuggestions "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions" > /dev/null 2>&1
+    git clone https://github.com/MichaelAquilina/zsh-you-should-use.git "$HOME/.oh-my-zsh/custom/plugins/you-should-use" > /dev/null 2>&1
+    git clone https://github.com/zsh-users/zsh-history-substring-search "$HOME/.oh-my-zsh/custom/plugins/zsh-history-substring-search" > /dev/null 2>&1
 
-    if grep -q '^plugins=(git)' "${HOME}"/.zshrc; then
-        sed -i 's/^plugins=(git).*/plugins=(git zsh-autosuggestions zsh-syntax-highlighting you-should-use zsh-history-substring-search)/g' "${HOME}"/.zshrc
-    fi
-
+    EnvConfigurator::_replace "${HOME}/.zshrc" '^plugins=(git)' 'plugins=(git zsh-autosuggestions zsh-syntax-highlighting you-should-use zsh-history-substring-search)'
     Logger::log_info "Finished installing oh-my-zsh plugins"
 }
 
@@ -129,9 +135,13 @@ Zsh::install_fonts()
     fi
 
     Logger::log_info "Installing PowerLine fonts"
-    git clone --depth 1 "https://github.com/powerline/fonts" "pl-fonts" > /dev/null 2>&1
+    if [[ ! -d "pl-fonts" ]]; then
+        git clone --depth 1 "https://github.com/powerline/fonts" "pl-fonts" > /dev/null 2>&1
+    else
+        Logger::log_warning "Powerline fonts directory already exists, skipping git clone"
+    fi
     cd "pl-fonts" || exit
-    /bin/bash ./install.sh > /dev/null 2>&1
+    ./install.sh > /dev/null 2>&1
 
     Logger::log_info "Finished installing fonts"
 }
@@ -142,20 +152,22 @@ Zsh::install_theme()
     Logger::log_info "Installing Powerlevel10k theme for oh-my-zsh"
     rm -f "${HOME}/.p10k.zsh"
     mkdir -p "${HOME}/.oh-my-zsh/custom/themes/power"
-    git clone --depth=1 "https://github.com/romkatv/powerlevel10k.git" "${HOME}/.oh-my-zsh/custom/themes/powerlevel10k" > /dev/null 2>&1
-
-    if grep -q '^ZSH_THEME=' "${HOME}"/.zshrc; then
-        sed -i 's/^ZSH_THEME=.*/ZSH_THEME="powerlevel10k\/powerlevel10k"/g' "${HOME}"/.zshrc
+    if [[ ! -d "${HOME}/.oh-my-zsh/custom/themes/powerlevel10k" ]]; then
+        git clone --depth=1 "https://github.com/romkatv/powerlevel10k.git" "${HOME}/.oh-my-zsh/custom/themes/powerlevel10k" > /dev/null 2>&1
     else
-        echo 'ZSH_THEME="powerlevel10k/powerlevel10k"' >> "${HOME}"/.zshrc
+        Logger::log_warning "Powerlevel10k theme directory already exists, skipping git clone"
     fi
 
-    if ! grep -q "source \$ZSH/oh-my-zsh.sh" "${HOME}"/.zshrc; then
-        # shellcheck disable=SC2129
-        # shellcheck disable=SC2140
-        echo "export ZSH=""${HOME}"/.oh-my-zsh"" >> "${HOME}"/.zshrc
-        echo "plugins=()" >> "${HOME}"/.zshrc
-        echo "source ${ZSH}/oh-my-zsh.sh" >> "${HOME}"/.zshrc
+    
+    if EnvConfigurator::_exists "${HOME}/.zshrc" "ZSH_THEME";then
+        EnvConfigurator::_regex "${HOME}/.zshrc" '^ZSH_THEME=.*' 'ZSH_THEME="powerlevel10k/powerlevel10k"'
+    else
+        EnvConfigurator::_write "${HOME}/.zshrc" 'ZSH_THEME="powerlevel10k/powerlevel10k"'
+    fi
+
+    if ! EnvConfigurator::_exists "${HOME}/.zshrc" "source \$ZSH/oh-my-zsh.sh"; then
+        EnvConfigurator::_write "${HOME}/.zshrc" "export ZSH=${HOME}/.oh-my-zsh"
+        EnvConfigurator::_write "${HOME}/.zshrc" "source ${ZSH}/oh-my-zsh.sh"
     fi
 
     PRECONFIGURED_P10K="${PRECONFIGURED_DIR}/.p10k.zsh"
@@ -167,15 +179,17 @@ Zsh::install_theme()
     fi
 
     # shellcheck disable=SC2016
-    echo '# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+    EnvConfigurator::_insert "${HOME}/.zshrc" \
+    '# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
     source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi' | cat - "${HOME}/.zshrc"> temp && mv temp "${HOME}/.zshrc"
+fi' 1
 
-echo "# To customize prompt, run p10k configure or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh" >> "${HOME}/.zshrc"
+    EnvConfigurator::_write_if_not_present "${HOME}/.zshrc" \
+    "# To customize prompt, run p10k configure or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh"
 
     Logger::log_info "Finished installing theme for oh-my-zsh"
 }
@@ -185,10 +199,10 @@ Zsh::set_aliases()
     Logger::log_info "Setting up aliases for zsh >> ${HOME}/.zshrc"
     # TODO: Add more aliases
     # 8: set aliases:
-    if ! grep -q 'alias gs=' "${HOME}"/.zshrc; then
-        echo 'alias gs="git status"' >> "${HOME}"/.zshrc
+    EnvConfigurator::_write_if_not_present "${HOME}/.zshrc" "alias gs='git status'"
+    if ! EnvConfigurator::_exists "${HOME}/.zshrc" "alias gs="; then
+        EnvConfigurator::_write "${HOME}/.zshrc" 'alias gs="git status"'
     fi
-    source "${HOME}/.bashrc"
 
     Logger::log_info "Finished setting up aliases for zsh"
 }
@@ -225,6 +239,12 @@ Zsh::set_as_default_shell()
     Logger::log_warning "Setting zsh as default shell - no implementation yet"
 }
 
+Zsh::configure()
+{
+    Logger::log_info "Configuring zshrc"
+    EnvConfigurator::_write_if_not_present "${HOME}/.zshrc" "export OSTYPE=linux"
+}
+
 Zsh::clean_up()
 {
     Logger::log_info "Cleaning up temporary files"
@@ -254,5 +274,6 @@ Zsh::install
 Zsh::install_plugins
 Zsh::install_fonts
 Zsh::install_theme
+Zsh::configure
 Zsh::set_aliases
 Zsh::verify_installation
