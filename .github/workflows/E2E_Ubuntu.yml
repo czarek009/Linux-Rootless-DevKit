@@ -1,0 +1,29 @@
+name: E2E Ubuntu
+
+on:
+  push:
+    branches:
+      - '**'   # Matches all branches on push
+  pull_request:
+    branches:
+      - '**'   # Matches all branches on pull request
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os_version: [ "2004", "2204", "2404", "2504" ]
+    env:
+      Dockerfile: ./test/workflows/containers/Dockerfile_Ubuntu_${{ matrix.os_version }}
+      DockerTag: workflow:ubuntu-${{ matrix.os_version }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Run E2E tests on Ubuntu ${{ matrix.os_version }}
+      run: |
+        DOCKER_BUILDKIT=1 docker build --no-cache --progress=plain --file ${{ env.Dockerfile }} --tag ${{ env.DockerTag }} .
+        docker run --privileged --security-opt seccomp=unconfined --rm ${{ env.DockerTag }}
