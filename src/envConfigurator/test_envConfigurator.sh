@@ -163,5 +163,5 @@ else
 fi
 
 # delete test.txt && test_dir
-#rm -f test.txt
+rm -f test.txt
 rm -rf test_dir
