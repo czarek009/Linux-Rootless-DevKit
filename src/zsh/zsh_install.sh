@@ -54,31 +54,32 @@ Zsh::install()
     cd "zsh-${ZSH_VERSION}" || exit
     Logger::log_info "Configuring zsh"
     ./configure --prefix="${INSTALL_DIR}" --with-tcsetpgrp > /dev/null 2>&1
-    Logger::log_info "Compiling zsh"
+    Logger::log_info "Compiling zsh - this may take a while"
     make > /dev/null 2>&1
     Logger::log_info "Installing zsh"
     make install > /dev/null 2>&1
 
-    if [[ ! -f "${HOME}/.bashrc.user" ]]; then
-        Logger::log_info "Creating ${HOME}/.bashrc.user"
-        touch "${HOME}/.bashrc.user"
+    if [[ ! -f "${HOME}/.zshrc" ]]; then
+        Logger::log_info "${HOME}/.zshrc does not exists - creating a new one"
+        touch "${HOME}/.zshrc"
     else
-        Logger::log_info "${HOME}/.bashrc.user already exists"
+        Logger::log_info "${HOME}/.zshrc already exists - backing it up as .zshrc.old"
+        mv "${HOME}/.zshrc" "${HOME}/.zshrc.old"
     fi
 
     # Set $HOME/.local/bin in PATH:
     if ! echo "${PATH}" | grep -q "${HOME}/.local/bin"; then
         # shellcheck disable=SC2016
-        EnvConfigurator::_write_if_not_present "${HOME}/.bashrc.user" 'export PATH="$HOME/.local/bin:$PATH"'
+        EnvConfigurator::_write_if_not_present "${HOME}/.zshrc" 'export PATH="$HOME/.local/bin:$PATH"'
         export PATH="${HOME}/.local/bin:${PATH}"
-        source "${HOME}"/.bashrc.user
+        source "${HOME}"/.zshrc
     fi
 
     # Install oh-my-zsh
     export RUNZSH=no
     export ZSH="${HOME}/.oh-my-zsh"
     export CHSH=no
-    export KEEP_ZSHRC=yes
+    export KEEP_ZSHRC=no
     export PATH="${HOME}/.local/bin:${PATH}"
 
     if [[ ! -d "${ZSH}" ]]; then
@@ -95,12 +96,12 @@ Zsh::install_plugins()
 {
     Logger::log_info "Installing oh-my-zsh plugins"
 
-    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" > /dev/null 2>&1
-    git clone https://github.com/zsh-users/zsh-autosuggestions "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions" > /dev/null 2>&1
-    git clone https://github.com/MichaelAquilina/zsh-you-should-use.git "$HOME/.oh-my-zsh/custom/plugins/you-should-use" > /dev/null 2>&1
-    git clone https://github.com/zsh-users/zsh-history-substring-search "$HOME/.oh-my-zsh/custom/plugins/zsh-history-substring-search" > /dev/null 2>&1
+    EnvConfigurator::git_clone_if_not_exists https://github.com/zsh-users/zsh-syntax-highlighting.git "$HOME/.oh-my-zsh/custom/plugins"
+    EnvConfigurator::git_clone_if_not_exists https://github.com/zsh-users/zsh-autosuggestions "$HOME/.oh-my-zsh/custom/plugins"
+    EnvConfigurator::git_clone_if_not_exists https://github.com/MichaelAquilina/zsh-you-should-use.git "$HOME/.oh-my-zsh/custom/plugins"
+    EnvConfigurator::git_clone_if_not_exists https://github.com/zsh-users/zsh-history-substring-search "$HOME/.oh-my-zsh/custom/plugins"
 
-    EnvConfigurator::_replace "${HOME}/.zshrc" '^plugins=(git)' 'plugins=(git zsh-autosuggestions zsh-syntax-highlighting you-should-use zsh-history-substring-search)'
+    EnvConfigurator::_replace "${HOME}/.zshrc" '^plugins=(git)' 'plugins=(git zsh-autosuggestions zsh-syntax-highlighting zsh-you-should-use zsh-history-substring-search)'
     Logger::log_info "Finished installing oh-my-zsh plugins"
 }
 
@@ -113,7 +114,7 @@ Zsh::install_fonts()
     FONT_VERSION="3.4.0"
     FONT_URL="https://github.com/ryanoasis/nerd-fonts/releases/download/v${FONT_VERSION}/${FONT_NAME}.tar.xz"
 
-    Utils::create_dir_if_not_exists "${FONT_DIR}"
+    EnvConfigurator::create_dir_if_not_exists "${FONT_DIR}"
     cd "${SRC_DIR}" || exit
 
     if [[ ! -f "${FONT_NAME}.tar.xz" ]]; then
@@ -135,12 +136,9 @@ Zsh::install_fonts()
     fi
 
     Logger::log_info "Installing PowerLine fonts"
-    if [[ ! -d "pl-fonts" ]]; then
-        git clone --depth 1 "https://github.com/powerline/fonts" "pl-fonts" > /dev/null 2>&1
-    else
-        Logger::log_warning "Powerline fonts directory already exists, skipping git clone"
-    fi
-    cd "pl-fonts" || exit
+    EnvConfigurator::git_clone_if_not_exists "https://github.com/powerline/fonts" "pl-fonts" > /dev/null 2>&1
+
+    cd "pl-fonts/fonts" || exit
     ./install.sh > /dev/null 2>&1
 
     Logger::log_info "Finished installing fonts"
@@ -151,21 +149,15 @@ Zsh::install_theme()
     # Install powerlevel10k theme:
     Logger::log_info "Installing Powerlevel10k theme for oh-my-zsh"
     rm -f "${HOME}/.p10k.zsh"
-    mkdir -p "${HOME}/.oh-my-zsh/custom/themes/power"
-    if [[ ! -d "${HOME}/.oh-my-zsh/custom/themes/powerlevel10k" ]]; then
-        git clone --depth=1 "https://github.com/romkatv/powerlevel10k.git" "${HOME}/.oh-my-zsh/custom/themes/powerlevel10k" > /dev/null 2>&1
-    else
-        Logger::log_warning "Powerlevel10k theme directory already exists, skipping git clone"
-    fi
 
-    
-    if EnvConfigurator::_exists "${HOME}/.zshrc" "ZSH_THEME";then
+    EnvConfigurator::git_clone_if_not_exists "https://github.com/romkatv/powerlevel10k.git" "${HOME}/.oh-my-zsh/custom/themes" > /dev/null 2>&1
+    if EnvConfigurator::_exists "${HOME}/.zshrc" "ZSH_THEME" >/dev/null;then
         EnvConfigurator::_regex "${HOME}/.zshrc" '^ZSH_THEME=.*' 'ZSH_THEME="powerlevel10k/powerlevel10k"'
     else
         EnvConfigurator::_write "${HOME}/.zshrc" 'ZSH_THEME="powerlevel10k/powerlevel10k"'
     fi
 
-    if ! EnvConfigurator::_exists "${HOME}/.zshrc" "source \$ZSH/oh-my-zsh.sh"; then
+    if ! EnvConfigurator::_exists "${HOME}/.zshrc" "source \$ZSH/oh-my-zsh.sh" >/dev/null; then
         EnvConfigurator::_write "${HOME}/.zshrc" "export ZSH=${HOME}/.oh-my-zsh"
         EnvConfigurator::_write "${HOME}/.zshrc" "source ${ZSH}/oh-my-zsh.sh"
     fi
@@ -200,7 +192,7 @@ Zsh::set_aliases()
     # TODO: Add more aliases
     # 8: set aliases:
     EnvConfigurator::_write_if_not_present "${HOME}/.zshrc" "alias gs='git status'"
-    if ! EnvConfigurator::_exists "${HOME}/.zshrc" "alias gs="; then
+    if ! EnvConfigurator::_exists "${HOME}/.zshrc" "alias gs=" >/dev/null; then
         EnvConfigurator::_write "${HOME}/.zshrc" 'alias gs="git status"'
     fi
 
@@ -211,12 +203,11 @@ Zsh::verify_installation()
 {
     # Check if zsh is installed
     if [[ -x "${INSTALL_DIR}/bin/zsh" ]]; then
-        Logger::log_info "✔ Zsh installed successfully at ${INSTALL_DIR}/bin/zsh"
-        echo -e "\033[0;32mℹ️ Font  '${FONT_NAME}' installed. Please set it in your terminal preferences.\033[0m"
-        echo -e "\033[0;32mℹ️ Run \"p10k configure\" to run prompt configurator \033[0m"
-        echo -e "\033[0;32m✔ Please restart your terminal\033[0m"
+        Logger::log_success "Zsh installed successfully at ${INSTALL_DIR}/bin/zsh"
+        Logger::log_userAction "Font  '${FONT_NAME}' installed. Please set it in your terminal preferences"
+        Logger::log_userAction "Run \"p10k configure\" to run prompt configurator"
+        Logger::log_userAction "Please restart your terminal"
     else
-        echo "❌ Zsh installation failed or zsh not found at ${INSTALL_DIR}/bin/zsh"
         Logger::log_error "Zsh installation failed or zsh not found at ${INSTALL_DIR}/bin/zsh"
     fi
 }
@@ -251,24 +242,14 @@ Zsh::clean_up()
     rm -rf "${SRC_DIR}/zsh-${ZSH_VERSION}" "${SRC_DIR}/zsh-${ZSH_VERSION}.tar.xz" "${SRC_DIR}/pl-fonts"
 }
 
-Utils::create_dir_if_not_exists() 
-{
-    if [[ ! -d "$1" ]]; then
-        Logger::log_info "Creating directory: $1"
-        mkdir -p "$1"
-    else
-        Logger::log_warning "Directory already exists: $1"
-    fi
-}
-
 Logger::log_info "Starting Zsh installation script"
 INSTALL_DIR="${HOME}/.local"
 SRC_DIR="${HOME}/src"
 ZSH_VERSION="$(Zsh::get_latest_available_zsh_version)"
 Logger::log_info "Latest Zsh version: ${ZSH_VERSION}"
 
-Utils::create_dir_if_not_exists "${INSTALL_DIR}"
-Utils::create_dir_if_not_exists "${SRC_DIR}"
+EnvConfigurator::create_dir_if_not_exists "${INSTALL_DIR}" > /dev/null
+EnvConfigurator::create_dir_if_not_exists "${SRC_DIR}" > /dev/null
 
 Zsh::install
 Zsh::install_plugins

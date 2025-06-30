@@ -92,13 +92,21 @@ Logger::_log()
 
     echo "[${timestamp}] [${log_level}] [${file_name}:${line_number}]: ${log_message}" >> "${LOG_FILE}"
 
-    if [[ "${log_level}" == "ERROR" || "${log_level}" == "WARN" || "${log_level}" == "INFO" ]]; then
+    if [[ "${log_level}" == "ERROR" ||
+          "${log_level}" == "WARN" ||
+          "${log_level}" == "INFO" ||
+          "${log_level}" == "SUCCESS" ||
+          "${log_level}" == "USER ACTION" ||
+          ("${log_level}" == "DEBUG" && "$LOGGER_DEBUG_PRINT" -eq "1") ]]; then
         local color_reset="\033[0m"
         local color
         case "${log_level}" in
             "ERROR") color="\033[31m" ;; # Red
             "WARN")  color="\033[33m" ;; # Yellow
             "INFO")  color="\033[34m" ;; # Blue
+            "DEBUG") color="\033[36m" ;; # Cyan
+            "SUCCESS") color="\033[32m" ;; # Green
+            "USER ACTION") color="\033[35m" ;; # Magenta
             *)       color="" ;;
         esac
         echo -e "[${timestamp}] [${color}${log_level}${color_reset}] [${file_name}:${line_number}]: ${log_message}" > "/dev/stderr"
@@ -130,17 +138,27 @@ Logger::log_debug()
     Logger::_log "DEBUG" "$1"
 }
 
+Logger::log_success()
+{
+    Logger::_log "SUCCESS" "$1"
+}
+
+Logger::log_userAction()
+{
+    Logger::_log "USER ACTION" "$1"
+}
+
 # Telemetry functions and signal handlers:
 Telemetry::prepare_report()
 {
-    echo "NOT IMPLEMENTED"
+    Logger::log_info "NOT IMPLEMENTED"
     # TODO: Gather some additional system info / env variables / etc.
     # Add whole dir with log to archive, name archive
 }
 
 Telemetry::send_report()
 {
-    echo "NOT IMPLEMENTED"
+    Logger::log_info "NOT IMPLEMENTED"
     # TODO: Send report somewhere
 }
 
