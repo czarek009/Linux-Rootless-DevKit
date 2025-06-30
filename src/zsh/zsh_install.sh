@@ -7,7 +7,7 @@
 # Exit if non-zero status:
 set -e
 # Show executed commanmds:
-set -x
+#set -x
 
 LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../logger" && pwd)/script_logger.sh"
 ENV_CONFIGURATOR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../envConfigurator" && pwd)/envConfigurator.sh"
