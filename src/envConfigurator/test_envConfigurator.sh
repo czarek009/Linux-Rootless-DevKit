@@ -99,6 +99,36 @@ else
     exit 1
 fi
 
+# Test EnvConfigurator::_write_if_not_present with multiple lines
+echo -e "\n${COLOR_BLUE}Checking if EnvConfigurator::_write_if_not_present adds multiple lines correctly ${COLOR_RESET}"
+# Write the multiline string if not present
+EnvConfigurator::_write_if_not_present "test.txt" \
+"This
+text
+only
+once"
+if [[ $(grep -Poz '(?s)(^|\n)This\ntext\nonly\nonce(?=\n|$)' test.txt | grep -c "^") -eq 5 ]]; then
+    echo -e "${COLOR_GREEN}EnvConfigurator::_write_if_not_present added the multiline string correctly${COLOR_RESET}"
+else
+    echo -e "${COLOR_RED}EnvConfigurator::_write_if_not_present failed to add the multiline string${COLOR_RESET}"
+    exit 1
+fi
+
+# Test EnvConfigurator::_write_if_not_present will not add multiple lines that already exist
+echo -e "\n${COLOR_BLUE}Checking if EnvConfigurator::_write_if_not_present will NOT add multiple lines that already exist ${COLOR_RESET}"
+# Write the multiline string if not present
+EnvConfigurator::_write_if_not_present "test.txt" \
+"This
+text
+only
+once"
+if [[ $(grep -Poz '(?s)(^|\n)This\ntext\nonly\nonce(?=\n|$)' test.txt | grep -c "^") -eq 5 ]]; then
+    echo -e "${COLOR_GREEN}EnvConfigurator::_write_if_not_present added the multiline string correctly${COLOR_RESET}"
+else
+    echo -e "${COLOR_RED}EnvConfigurator::_write_if_not_present ADDED multiple lines, that already exist!${COLOR_RESET}"
+    exit 1
+fi
+
 echo -e "\n${COLOR_BLUE}Checking if EnvConfigurator::_write_if_not_present does not add a line that already exists ${COLOR_RESET}"
 EnvConfigurator::_write_if_not_present "test.txt" "This is the fifth new line"
 if ! [[ $(grep -c "This is a write if not present test line" "test.txt") -eq 1 ]]; then
