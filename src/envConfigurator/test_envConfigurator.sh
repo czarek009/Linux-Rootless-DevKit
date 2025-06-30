@@ -122,5 +122,16 @@ else
     echo -e "${COLOR_GREEN}EnvConfigurator::_replace The string 'LINE' does not exist in test.txt${COLOR_RESET}"
 fi
 
-# delete test.txt
+#Test EnvConfigurator::create_dir_if_not_exists
+echo -e "\n${COLOR_BLUE}Checking if EnvConfigurator::create_dir_if_not_exists creates a directory if it does not exist ${COLOR_RESET}"
+EnvConfigurator::create_dir_if_not_exists "test_dir"
+if [[ -d "test_dir" ]]; then
+    echo -e "${COLOR_GREEN}EnvConfigurator::create_dir_if_not_exists created the directory 'test_dir' successfully${COLOR_RESET}"
+else
+    echo -e "${COLOR_RED}EnvConfigurator::create_dir_if_not_exists failed to create the directory 'test_dir'${COLOR_RESET}"
+    exit 1
+fi
+
+# delete test.txt && test_dir
 rm -f test.txt
+rm -rf test_dir
