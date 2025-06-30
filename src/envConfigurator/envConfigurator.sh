@@ -23,7 +23,6 @@ EnvConfigurator::_write_if_not_present() {
         EnvConfigurator::_write "$file" "$content"
     else
         Logger::log_debug "Content already exists in file: $file at line $exists"
-        echo -1
     fi
 }
 
@@ -88,51 +87,19 @@ EnvConfigurator::_exists() {
     Logger::log_debug "Checking if content exists in file: $file"
     Logger::log_debug "Content to find: $content"
 
-    # Handle multiline content
-    local lines total_lines match_line i
-    IFS=$'\n' read -rd '' -a lines <<<"$content"
-    total_lines=${#lines[@]}
-
-    if [[ $total_lines -eq 1 ]]; then
-        lineno=$(grep -Fn -- "$content" "$file" | cut -d: -f1 | head -n1)
-        if [[ -n "$lineno" ]]; then
-            Logger::log_debug "Content was found at line: $lineno"
-            echo "$lineno"
-        else
-            Logger::log_debug "Content not found in file: $file"
-            echo "-1"
-        fi
+    if [[ "$content" == *$'\n'* ]]; then
+        lineno=$(grep -F -x -m 1 -n -f <(printf '%s\n' "$content") "$file" | cut -d: -f1 | head -n1)
     else
-        match_line=-1
-        while IFS= read -r line; do
-            ((i++))
-            if [[ "$line" == "${lines[0]}" ]]; then
-                matched=1
-                for ((j=1; j<total_lines; j++)); do
-                    read -r next_line <&3 || { matched=0; break; }
-                    ((i++))
-                    if [[ "$next_line" != "${lines[j]}" ]]; then
-                        matched=0
-                        break
-                    fi
-                done
-                if [[ $matched -eq 1 ]]; then
-                    match_line=$((i - total_lines + 1))
-                    break
-                fi
-                # rewind file pointer for next iteration
-                exec 3<&-
-                exec 3<"$file"
-                for ((k=0; k<i; k++)); do read -r <&3; done
-            fi
-        done 3<"$file" <"$file"
-        if [[ $match_line -ne -1 ]]; then
-            Logger::log_debug "Multiline content was found at line: $match_line"
-            echo "$match_line"
-        else
-            Logger::log_debug "Multiline content not found in file: $file"
-            echo "-1"
-        fi
+        # Single line
+        lineno=$(grep -F -x -m 1 -n -- "$content" "$file" | cut -d: -f1 | head -n1)
+    fi
+
+    if [[ -n "$lineno" ]]; then
+        Logger::log_debug "Content was found at line: $lineno"
+        echo "$lineno"
+    else
+        Logger::log_debug "Content not found in file: $file"
+        echo "-1"
     fi
 }
 
