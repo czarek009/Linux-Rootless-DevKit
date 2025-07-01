@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 
-BACKUP_PATH="${HOME}/.project-backup"
+ENV_PATHS_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/env_variables.sh"
+source "${ENV_PATHS_LIB}"
 LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../logger" && pwd)/script_logger.sh"
 source "$LOGGER_PATH"
+ENV_CONFIGURATOR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../envConfigurator" && pwd)/envConfigurator.sh"
+source "${ENV_CONFIGURATOR_PATH}"
 
 Omb::install()
 {
   #TODO: customizable directory localization
-  mkdir -p "${BACKUP_PATH}"
+  EnvConfigurator::create_dir_if_not_exists "${BACKUP_PATH}"
 
   bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
 

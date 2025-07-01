@@ -22,7 +22,7 @@ install() {
 	local profile_file="${SHELLRC_PATH}"
 
 	echo "Installing Go to ${goroot}..."
-	mkdir -p "${install_dir}"
+	EnvConfigurator::create_dir_if_not_exists "${install_dir}"
 	tar -C "${install_dir}" -xzf "${go_tarball}" || { echo "Extraction failed"; exit 1;}
 	rm "${go_tarball}"
 
@@ -34,7 +34,7 @@ export GOROOT=\"${goroot}\"
 export GOPATH=\"${gopath}\"
 export PATH=\"\$GOROOT/bin:\$GOPATH/bin:\$PATH\""
 
-	mkdir -p "${gopath}/bin"
+	EnvConfigurator::create_dir_if_not_exists "${gopath}/bin"
 	# Source the profile file to update env vars
 	echo "Sourcing ${profile_file}..."
 	source "${profile_file}"
