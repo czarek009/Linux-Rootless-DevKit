@@ -29,6 +29,7 @@ RUN dnf -y update && \
 ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
+ENV SELECTED_SHELL="bash"
 
 # --- Install ShellCheck ---
 RUN curl -sSL https://github.com/koalaman/shellcheck/releases/download/v0.9.0/shellcheck-v0.9.0.linux.x86_64.tar.xz \
