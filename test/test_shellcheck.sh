@@ -5,14 +5,14 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_TOP_DIR="${SCRIPT_DIR}/.."
-
-# Source libraries
+LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../src/logger" && pwd)/script_logger.sh"
+source "${LOGGER_PATH}"
 TEST_LIB_PATH="${PROJECT_TOP_DIR}/test/test_lib.sh"
-if [[ -f "${TEST_LIB_PATH}" ]]; then
-    # shellcheck source=/dev/null
-    source "${TEST_LIB_PATH}"
-else
-    echo "Error: Could not find test_lib.sh at ${TEST_LIB_PATH}"
+source "${TEST_LIB_PATH}"
+
+# Checking if shellcheck is installed
+if ! command -v shellcheck &>/dev/null; then
+    Logger::log_error "Error: shellcheck is not installed."
     exit 1
 fi
 
@@ -42,7 +42,7 @@ if [[ "${1:-}" == "-p" ]]; then
 
     # Check if the array of files is empty
     if (( ${#all_files[@]} == 0 )); then
-        echo "No .sh files found in the project."
+        Logger::log_warning "No .sh files found in the project."
         exit 1
     else
         # Run shellcheck on all found files

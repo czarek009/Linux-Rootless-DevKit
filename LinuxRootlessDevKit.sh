@@ -10,7 +10,7 @@ LinuxRootlessDevKit::install()
       source "${PROJECT_TOP_DIR}/src/bash/omb_install.sh"
       Omb::install || exit 1
     else
-      echo "Error: Could not find rust_install.sh at ${PROJECT_TOP_DIR}/src/bash/omb_install.sh"
+      echo "Error: Could not find omb_install.sh at ${PROJECT_TOP_DIR}/src/bash/omb_install.sh"
       exit 1
     fi
   elif [[ "$1" == "zsh" ]]; then
@@ -30,7 +30,7 @@ LinuxRootlessDevKit::install()
   if [[ -f "${RUST_INSTALL_PATH}" ]]; then
       source "${RUST_INSTALL_PATH}"
   else
-      echo "Error: Could not find omb_install.sh at ${RUST_INSTALL_PATH}"
+      echo "Error: Could not find rust_install.sh at ${RUST_INSTALL_PATH}"
       exit 1
   fi
   # Install rust with shell config file as an argument

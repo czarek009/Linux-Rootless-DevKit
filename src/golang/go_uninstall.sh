@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+ENV_PATHS_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/env_variables.sh"
+source "${ENV_PATHS_LIB}"
+ENV_CONFIGURATOR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../envConfigurator" && pwd)/envConfigurator.sh"
+source "${ENV_CONFIGURATOR_PATH}"
+
 remove_dirs() {
 	echo "Removing Go directories"
 	local goroot="${HOME}/.local/go"
@@ -7,16 +12,17 @@ remove_dirs() {
 	rm -rf "${goroot}" "${gopath}"
 }
 
+# shellcheck disable=SC2016
 clean_bashrc() {
-	local profile_file="${HOME}/.bashrc.user"
-	sed -i '/^# Go environment setup$/d' "${profile_file}"
-	sed -i '/^unset -f go 2> \/dev\/null$/d ' "${profile_file}"
-	sed -i "/^export GOROOT=\"${HOME//\//\\/}\/.local\/go\"$/d" "${profile_file}"
-	sed -i "/^export GOPATH=\"${HOME//\//\\/}\/go\"$/d" "${profile_file}"
-	# shellcheck disable=SC2016
-	sed -i '/^export PATH="\$GOROOT\/bin:\$GOPATH\/bin:\$PATH"$/d' "${profile_file}"
-
-	echo "Go environment lines removed from ${profile_file}."
+	local profile_file="${SHELLRC_PATH}"
+	EnvConfigurator::_remove "${profile_file}" \
+"
+# Go environment setup
+unset -f go 2> /dev/null
+export GOROOT=\"${HOME}/.local/go\"
+export GOPATH=\"${HOME}/go\"
+export PATH=\"\$GOROOT/bin:\$GOPATH/bin:\$PATH\""
+    echo "Go environment lines removed from ${profile_file}"
 }
 
 main() {

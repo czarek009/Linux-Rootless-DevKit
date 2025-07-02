@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-BACKUP_PATH="${HOME}/.project-backup"
+ENV_PATHS_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/env_variables.sh"
+source "${ENV_PATHS_LIB}"
 SHELLRC_PATH="$HOME/.bashrc"
 LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../logger" && pwd)/script_logger.sh"
 source "${LOGGER_PATH}"
-
 
 Omb::uninstall()
 {
