@@ -1,0 +1,138 @@
+FROM rockylinux:9 AS tester
+
+LABEL maintainer="Michal Kukowski <kukossw@gmail.com>"
+
+# =============== Install common packages (fonts, bash, locales ...) ===============
+
+# Packages are installed on most distributions, in case of real images (real HW, VM, VDI).
+# Usually, user would not have to install them manually.
+# This is a base image for testing, so we install them here.
+
+USER root
+
+RUN dnf update -y && \
+    dnf install -y --nodocs --allowerasing \
+        bash \
+        coreutils \
+        fontconfig \
+        glibc-locale-source \
+        glibc-langpack-en && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf /tmp/* /root/.cache
+
+# ==================================================================================
+
+# ================= Make fundamental configuration (language ...) ==================
+
+# The confifuration usually is done by the user during the installation of the system or first login.
+# Usually, user would not have to do it manually (admin does it for him).
+# This is a base image for testing, so we do it here.
+
+USER root
+
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+
+RUN localedef -i en_US -f UTF-8 en_US.UTF-8
+
+# ==================================================================================
+
+# ================ Simulate user without root privileges (no sudo) =================
+
+USER root
+
+RUN groupadd -f -g 1111 tester-no-root && \
+    useradd -m -u 1111 -g tester-no-root tester-no-root
+
+RUN chgrp -R tester-no-root /tmp && \
+    chmod -R g+rwx /tmp
+
+RUN mkdir -p /home/tester-no-root/Downloads && \
+    chown -R tester-no-root:tester-no-root /home/tester-no-root
+
+# ==================================================================================
+
+# =========================== Install required packages ============================
+
+# To see which packages are required, see README.md in the project root directory.
+# The main feature of this project is to require as few packages as possible.
+# Usually, user would not have to install them manually.
+# The biggers dependensies, are:
+# - podman (container engine, alternative to docker, without root privileges and demon)
+# - bash
+# - GNU coreutils (basic commands like ls, cp, mv, rm, etc.)
+
+USER root
+
+RUN dnf update -y && \
+    dnf install -y --nodocs \
+        podman && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf /tmp/* /root/.cache
+
+# podman requires some additional configuration to work without root privileges
+# Usually, user would not have to do it manually (admin does it for him).
+# Moreover, without podman properly configred and available on the machine, our project would not work.
+# Our target user is the one who has no root privileges, but has podman installed and configured.
+# To simulate such a user, we need to create a proper podman configuration here.
+
+# Install slirp4netns and fuse-overlayfs, which are required for podman to work without root privileges
+# slirp4netns is used for user-mode networking
+# fuse-overlayfs is used for user-mode storage
+# shadow-utils (uidmap) is used for user namespaces (user storage)
+# containernetworking-plugins is used for CNI (Container Network Interface): bridge/portmap/firewall/tuning
+RUN dnf update -y && \
+    dnf install -y --nodocs \
+        slirp4netns \
+        fuse-overlayfs \
+        shadow-utils \
+        containernetworking-plugins && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf /tmp/* /root/.cache
+
+# Grant the tester-no-root user a subordinate UID/GID range
+RUN usermod --add-subuids 100000-165535 --add-subgids 100000-165535 tester-no-root
+
+# Ensure XDG_RUNTIME_DIR exists and is owned by tester-no-root
+ENV XDG_RUNTIME_DIR=/run/user/1111
+RUN mkdir -p ${XDG_RUNTIME_DIR} && \
+    chown tester-no-root:tester-no-root ${XDG_RUNTIME_DIR}
+
+# Add set-uid for newuidmap and newgidmap binaries
+RUN chmod 0755 /usr/bin/newuidmap /usr/bin/newgidmap && \
+    setcap cap_setuid+ep /usr/bin/newuidmap && \
+    setcap cap_setgid+ep /usr/bin/newgidmap && \
+    chmod -s /usr/bin/newuidmap /usr/bin/newgidmap
+
+# Update ca-certificates to ensure podman can access the internet and download images
+RUN dnf update -y && \
+    dnf install -y --nodocs \
+        ca-certificates && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf /tmp/* /root/.cache && \
+    update-ca-trust
+
+# Usually on RHEL, Ubuntu, ... distributions, we need to remount the '/' as rshared to allow podman to work properly with rootless containers.
+# On RockyLinux, somehow this solution does not work, so we need to use 'unshare' command to remount the '/' as rshared.
+# This is a workaround for the issue with podman and rootless containers on RockyLinux.
+# This will get rid of the warning:
+#     WARN[0000] "/" is not a shared mount, this could cause issues or missing mounts with rootless containers
+RUN setcap cap_sys_admin+ep /usr/bin/unshare
+
+RUN echo '#!/usr/bin/env bash' > /usr/local/bin/podman_wrapper.sh && \
+    echo 'exec unshare -m --propagation shared "$@"' >> /usr/local/bin/podman_wrapper.sh && \
+    chmod +x /usr/local/bin/podman_wrapper.sh
+
+# ==================================================================================
+
+# ========================= Download project (copy files) ==========================
+
+COPY . /home/tester-no-root/Downloads
+WORKDIR /home/tester-no-root/Downloads
+
+# ==================================================================================
+
+USER tester-no-root
+ENTRYPOINT ["/usr/local/bin/podman_wrapper.sh"]
+CMD ["podman", "run", "ubuntu:latest", "echo", "PASSED"]
