@@ -162,6 +162,127 @@ else
     exit 1
 fi
 
-# delete test.txt && test_dir
+#Test EnvConfigurator::remove_dir_if_exists
+echo -e "\n${COLOR_BLUE}Checking if EnvConfigurator::remove_dir_if_exists removes a directory if it exists ${COLOR_RESET}"
+EnvConfigurator::remove_dir_if_exists "test_dir" "y"
+if [[ ! -d "test_dir" ]]; then
+    echo -e "${COLOR_GREEN}EnvConfigurator::remove_dir_if_exists removed the directory 'test_dir' successfully${COLOR_RESET}"
+else
+    echo -e "${COLOR_RED}EnvConfigurator::remove_dir_if_exists failed to remove the directory 'test_dir'${COLOR_RESET}"
+    exit 1
+fi
+
+# Test EnvConfigurator::remove_dir_if_exists with a non-empty directory and remove_non_empty set to 'y'
+mkdir "test_dir"
+touch "test_dir/test_file.txt"
+echo -e "\n${COLOR_BLUE}Checking if EnvConfigurator::remove_dir_if_exists removes a non-empty directory if 'remove_non_empty' is set to 'y' ${COLOR_RESET}"
+EnvConfigurator::remove_dir_if_exists "test_dir" "y"
+if [[ ! -d "test_dir" ]]; then
+    echo -e "${COLOR_GREEN}EnvConfigurator::remove_dir_if_exists removed the non-empty directory 'test_dir' successfully${COLOR_RESET}"
+else
+    echo -e "${COLOR_RED}EnvConfigurator::remove_dir_if_exists failed to remove the non-empty directory 'test_dir'${COLOR_RESET}"
+    exit 1
+fi
+
+# Test EnvConfigurator::remove_dir_if_exists with a non-empty directory and remove_non_empty set to 'n'
+mkdir "test_dir"
+touch "test_dir/test_file.txt"
+echo -e "\n${COLOR_BLUE}Checking if EnvConfigurator::remove_dir_if_exists does not remove a non-empty directory if 'remove_non_empty' is set to 'n' ${COLOR_RESET}"
+EnvConfigurator::remove_dir_if_exists "test_dir" "n"
+if [[ -d "test_dir" ]]; then
+    echo -e "${COLOR_GREEN}EnvConfigurator::remove_dir_if_exists did not remove the non-empty directory 'test_dir' as expected${COLOR_RESET}"
+else
+    echo -e "${COLOR_RED}EnvConfigurator::remove_dir_if_exists removed the non-empty directory 'test_dir' when it should not have${COLOR_RESET}"
+    exit 1
+fi
+
+# Test EnvConfigurator::move_file_if_exists
+touch "test_mv.txt"
+echo -e "\n${COLOR_BLUE}Checking if EnvConfigurator::move_file_if_exists moves test_mv.txt to test_dir/test_mv.txt if it exists ${COLOR_RESET}"
+EnvConfigurator::move_file_if_exists "test_mv.txt" "test_dir/test_mv.txt" "y"
+if [[ -f "test_dir/test_mv.txt" && ! -f "test_mv.txt" ]]; then
+    echo -e "${COLOR_GREEN}EnvConfigurator::move_file_if_exists moved the file 'test_mv.txt' to 'test_dir/test_mv.txt' successfully${COLOR_RESET}"
+else
+    echo -e "${COLOR_RED}EnvConfigurator::move_file_if_exists failed to move the file 'test_mv.txt' to 'test_dir/test_mv.txt'${COLOR_RESET}"
+    exit 1
+fi
+
+# Test EnvConfigurator::move_file_if_exists with overwrite set to 'y'
+touch "test_mv.txt"
+echo -e "\n${COLOR_BLUE}Checking if EnvConfigurator::move_file_if_exists moves test_mv.txt to test_dir/test_mv.txt if it exists and overwrite is set to 'y' ${COLOR_RESET}"
+EnvConfigurator::move_file_if_exists "test_mv.txt" "test_dir/test_mv.txt" "y"
+if [[ -f "test_dir/test_mv.txt" && ! -f "test_mv.txt" ]]; then
+    echo -e "${COLOR_GREEN}EnvConfigurator::move_file_if_exists moved the file 'test_mv.txt' to 'test_dir/test_mv.txt' successfully with overwrite set to 'y'${COLOR_RESET}"
+else
+    echo -e "${COLOR_RED}EnvConfigurator::move_file_if_exists failed to move the file 'test_mv.txt' to 'test_dir/test_mv.txt' with overwrite set to 'y'${COLOR_RESET}"
+    exit 1
+fi
+
+# Test EnvConfigurator::move_file_if_exists with overwrite set to 'n'
+touch "test_mv.txt"
+echo -e "\n${COLOR_BLUE}Checking if EnvConfigurator::move_file_if_exists does not move test_mv.txt to test_dir/test_mv.txt if it exists and overwrite is not set to 'y' ${COLOR_RESET}"
+EnvConfigurator::move_file_if_exists "test_mv.txt" "test_dir/test_mv.txt" "n"
+if [[ -f "test_dir/test_mv.txt" && -f "test_mv.txt" ]]; then
+    echo -e "${COLOR_GREEN}EnvConfigurator::move_file_if_exists did not move the file 'test_mv.txt' to 'test_dir/test_mv.txt' as expected${COLOR_RESET}"
+else
+    echo -e "${COLOR_RED}EnvConfigurator::move_file_if_exists moved the file 'test_mv.txt' to 'test_dir/test_mv.txt' when it should not have${COLOR_RESET}"
+    exit 1
+fi
+
+# Test EnvConfigurator::copy_file_if_exists
+touch "test_cp.txt"
+echo -e "\n${COLOR_BLUE}Checking if EnvConfigurator::copy_file_if_exists copies test_cp.txt to test_dir/test_cp.txt if it exists ${COLOR_RESET}"
+EnvConfigurator::copy_file_if_exists "test_cp.txt" "test_dir/test_cp.txt" "y"
+if [[ -f "test_dir/test_cp.txt" && -f "test_cp.txt" ]]; then
+    echo -e "${COLOR_GREEN}EnvConfigurator::copy_file_if_exists copied the file 'test_cp.txt' to 'test_dir/test_cp.txt' successfully${COLOR_RESET}"
+else
+    echo -e "${COLOR_RED}EnvConfigurator::copy_file_if_exists failed to copy the file 'test_cp.txt' to 'test_dir/test_cp.txt'${COLOR_RESET}"
+    exit 1
+fi
+
+# Test EnvConfigurator::copy_file_if_exists with overwrite set to 'y'
+touch "test_cp.txt"
+EnvConfigurator::_write "test_cp.txt" "OVERWRITE"
+echo -e "\n${COLOR_BLUE}Checking if EnvConfigurator::copy_file_if_exists copies test_cp.txt to test_dir/test_cp.txt if it exists and overwrite is set to 'y' ${COLOR_RESET}"
+EnvConfigurator::copy_file_if_exists "test_cp.txt" "test_dir/test_cp.txt" "y"
+if [[ -f "test_dir/test_cp.txt" && -f "test_cp.txt" ]] && grep -q "OVERWRITE" "test_dir/test_cp.txt"; then
+    echo -e "${COLOR_GREEN}EnvConfigurator::copy_file_if_exists copied the file 'test_cp.txt' to 'test_dir/test_cp.txt' successfully with overwrite set to 'y'${COLOR_RESET}"
+else
+    echo -e "${COLOR_RED}EnvConfigurator::copy_file_if_exists failed to copy the file 'test_cp.txt' to 'test_dir/test_cp.txt' with overwrite set to 'y'${COLOR_RESET}"
+    exit 1
+fi
+
+# Test EnvConfigurator::backup_file_if_exists
+mkdir "test_backup_dir"
+BACKUP_PATH_BACKUP=$BACKUP_PATH
+BACKUP_PATH="test_backup_dir"
+touch "test_backup.txt"
+echo -e "\n${COLOR_BLUE}Checking if EnvConfigurator::backup_file_if_exists backss up test_backup.txt to $BACKUP_PATH if it exists ${COLOR_RESET}"
+EnvConfigurator::backup_file_if_exists "test_backup.txt" "$BACKUP_PATH"
+if [[ "$(ls -1 "$BACKUP_PATH" | wc -l)" == 1 ]]; then
+    echo -e "${COLOR_GREEN}EnvConfigurator::backup_file_if_exists backed up the file 'test_backup.txt' to '$BACKUP_PATH' successfully${COLOR_RESET}"
+else
+    echo -e "${COLOR_RED}EnvConfigurator::backup_file_if_exists failed to back up the file 'test_backup.txt' to '$BACKUP_PATH'${COLOR_RESET}"
+    exit 1
+fi
+
+# Test EnvConfigurator::backup_file_if_exists with already backuped 
+sleep 1s
+echo -e "\n${COLOR_BLUE}Checking if EnvConfigurator::backup_file_if_exists back up test_backup.txt again and adds a timestamp $BACKUP_PATH ${COLOR_RESET}"
+EnvConfigurator::backup_file_if_exists "test_backup.txt" "$BACKUP_PATH"
+if [[ "$(ls -1 "$BACKUP_PATH" | wc -l)" == 2 ]]; then
+    echo -e "${COLOR_GREEN}EnvConfigurator::backup_file_if_exists backed up the file 'test_backup.txt' again to '$BACKUP_PATH' successfully${COLOR_RESET}"
+else
+    echo -e "${COLOR_RED}EnvConfigurator::backup_file_if_exists failed to back up the file 'test_backup.txt' again to '$BACKUP_PATH'${COLOR_RESET}"
+    exit 1
+fi
+
+
+BACKUP_PATH=$BACKUP_PATH_BACKUP
+# delete leftover files and directories
+rm -f test_mv.txt
+rm -f test_cp.txt
+rm -f test_backup.txt
 rm -f test.txt
 rm -rf test_dir
+rm -rf test_backup_dir

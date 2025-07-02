@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../logger" && pwd)/script_logger.sh"
 source "${LOGGER_PATH}"
+ENV_PATHS_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/env_variables.sh"
+source "${ENV_PATHS_LIB}"
 
 EnvConfigurator::_write() {
     local file="$1"
@@ -141,5 +143,85 @@ EnvConfigurator::create_dir_if_not_exists()
         mkdir -p "$dir_name"
     else
         Logger::log_debug "Directory already exists: $dir_name - skipping creation"
+    fi
+}
+
+EnvConfigurator::remove_dir_if_exists() 
+{
+    local dir_name="$1"
+    if [[ "$dir_name" == "/" ]]; then
+        Logger::log_error "Tried to remove root directory: $dir_name - this is not allowed!"
+        return 1
+    fi
+
+    local remove_non_empty="$2"
+    Logger::log_debug "Removing directory: $dir_name"
+    if [[ -d "$dir_name" ]]; then
+        if [[ -z "$(ls -A "$dir_name")" ]]; then
+            Logger::log_debug "Directory is empty -> removing: $dir_name"
+            rmdir "$dir_name"   
+        elif [[ "$remove_non_empty" == "y" ]]; then
+            Logger::log_debug "Directory is not empty and remove_non_empty is set to 'y' -> removing: $dir_name"
+            rm -rf "$dir_name"
+        else
+            Logger::log_debug "Directory is not empty, but remove_non_empty is not set to 'y' -> skipping removal"
+        fi
+    else
+        Logger::log_debug "Directory does not exist: $dir_name - skipping removal"
+    fi
+}
+
+EnvConfigurator::move_file_if_exists() 
+{
+    local source_file="$1"
+    local target_file="$2"
+    local overwrite="$3"
+
+    Logger::log_debug "Moving file from $source_file to $target_file"
+    if [[ -f "$source_file" ]]; then
+        if [[ -f "$target_file" && "$overwrite" != "y" ]]; then
+            Logger::log_debug "Target file exists, but overwrite is not set to 'y' -> skipping move"
+        else
+            Logger::log_debug "Moving file: $source_file to $target_file"
+            mv "$source_file" "$target_file"
+        fi
+    else
+        Logger::log_debug "Source file does not exist: $source_file - skipping move"
+    fi
+}
+
+EnvConfigurator::copy_file_if_exists() 
+{
+    local source_file="$1"
+    local target_file="$2"
+    local overwrite="$3"
+
+    Logger::log_debug "Copying file from $source_file to $target_file"
+    if [[ -f "$source_file" ]]; then
+        if [[ -f "$target_file" && "$overwrite" != "y" ]]; then
+            Logger::log_debug "Target file exists, but overwrite is not set to 'y' -> skipping copy"
+        else
+            cp "$source_file" "$target_file"
+            Logger::log_debug "Copied file: $source_file to $target_file"
+        fi
+    else
+        Logger::log_debug "Source file does not exist: $source_file - skipping copy"
+    fi
+}
+
+EnvConfigurator::backup_file_if_exists() 
+{
+    local source_file="$1"
+    local backup_dir="$BACKUP_PATH"
+
+    Logger::log_debug "Backing up file: $source_file to $backup_dir"
+    if [[ -f "$source_file" ]]; then
+        EnvConfigurator::create_dir_if_not_exists "$backup_dir"
+        local backup_file
+        backup_file="${backup_dir}/$(basename "$source_file").bak.$(date +%Y%m%d%H%M%S)"
+        Logger::log_debug "Backing up file to: $backup_file"
+        cp "$source_file" "$backup_file"
+    else
+        Logger::log_debug "Source file does not exist: $source_file - skipping backup"
     fi
 }
