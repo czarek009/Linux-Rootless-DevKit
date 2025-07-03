@@ -124,10 +124,9 @@ EnvConfigurator::git_clone_if_not_exists()
     local target_dir="$2"
     local repo_dir_name
 
-    Logger::log_debug "Cloning git repository if it does not exist: $repo_url"
     repo_dir_name=$(basename "$repo_url" .git)
     if [[ ! -d "$target_dir/$repo_dir_name" ]]; then
-        Logger::log_debug "Directory does not exist -> cloning into: $target_dir/$repo_dir_name"
+        Logger::log_debug "Cloning git repo: $target_dir/$repo_dir_name"
         git clone "$repo_url" "$target_dir/$repo_dir_name" > /dev/null 2>&1
     else
         Logger::log_debug "Directory already exists: $target_dir/$repo_dir_name - skipping clone"
@@ -137,9 +136,8 @@ EnvConfigurator::git_clone_if_not_exists()
 EnvConfigurator::create_dir_if_not_exists() 
 {
     local dir_name="$1"
-    Logger::log_debug "Creating directory if it does not exist: $1"
     if [[ ! -d "$dir_name" ]]; then
-        Logger::log_debug "Directory does not exist -> creating: $dir_name"
+        Logger::log_debug "Created dir: $dir_name"
         mkdir -p "$dir_name"
     else
         Logger::log_debug "Directory already exists: $dir_name - skipping creation"
@@ -155,7 +153,6 @@ EnvConfigurator::remove_dir_if_exists()
     fi
 
     local remove_non_empty="$2"
-    Logger::log_debug "Removing directory: $dir_name"
     if [[ -d "$dir_name" ]]; then
         if [[ -z "$(ls -A "$dir_name")" ]]; then
             Logger::log_debug "Directory is empty -> removing: $dir_name"
@@ -177,7 +174,6 @@ EnvConfigurator::move_file_if_exists()
     local target_file="$2"
     local overwrite="$3"
 
-    Logger::log_debug "Moving file from $source_file to $target_file"
     if [[ -f "$source_file" ]]; then
         if [[ -f "$target_file" && "$overwrite" != "y" ]]; then
             Logger::log_debug "Target file exists, but overwrite is not set to 'y' -> skipping move"
@@ -196,7 +192,6 @@ EnvConfigurator::copy_file_if_exists()
     local target_file="$2"
     local overwrite="$3"
 
-    Logger::log_debug "Copying file from $source_file to $target_file"
     if [[ -f "$source_file" ]]; then
         if [[ -f "$target_file" && "$overwrite" != "y" ]]; then
             Logger::log_debug "Target file exists, but overwrite is not set to 'y' -> skipping copy"
@@ -206,6 +201,28 @@ EnvConfigurator::copy_file_if_exists()
         fi
     else
         Logger::log_debug "Source file does not exist: $source_file - skipping copy"
+    fi
+}
+
+EnvConfigurator::remove_file_if_exists() 
+{
+    local file_name="$1"
+    if [[ -f "$file_name" ]]; then
+        Logger::log_debug "Removing file: $file_name"
+        rm -f "$file_name"
+    else
+        Logger::log_debug "File does not exist: $file_name - skipping removal"
+    fi
+}
+
+EnvConfigurator::create_file_if_not_exists() 
+{
+    local file_name="$1"
+    if [[ ! -f "$file_name" ]]; then
+        Logger::log_debug "Creating file: $file_name"
+        touch "$file_name"
+    else
+        Logger::log_debug "File already exists: $file_name - skipping creation"
     fi
 }
 
