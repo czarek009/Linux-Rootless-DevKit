@@ -8,7 +8,11 @@ source "${LOGGER_PATH}"
 
 Omb::uninstall()
 {
-  cp "${HOME}"/.project-backup/.bashrc.omb-backup* "${HOME}"
+  for file in "${HOME}"/.project-backup/.bashrc.omb-backup*; do
+    if [[ -f "$file" ]]; then
+      EnvConfigurator::copy_file_if_exists "$file" "${HOME}/$(basename "$file")" "y"
+    fi
+  done
 
   "${HOME}"/.oh-my-bash/tools/uninstall.sh <<< "Y"
 }
