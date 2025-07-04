@@ -1,0 +1,29 @@
+name: E2E CentOS
+
+on:
+  push:
+    branches:
+      - '**'   # Matches all branches on push
+  pull_request:
+    branches:
+      - '**'   # Matches all branches on pull request
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os_version: [ "8" ]
+    env:
+      Dockerfile: ./test/workflows/containers/Dockerfile_CentOS_${{ matrix.os_version }}
+      DockerTag: workflow:centos-${{ matrix.os_version }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Run E2E tests on CentOS ${{ matrix.os_version }}
+      run: |
+        DOCKER_BUILDKIT=1 docker build --no-cache --progress=plain --file ${{ env.Dockerfile }} --tag ${{ env.DockerTag }} .
+        docker run --privileged --security-opt seccomp=unconfined --rm ${{ env.DockerTag }}
