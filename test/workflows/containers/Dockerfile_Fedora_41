@@ -2,6 +2,11 @@ FROM fedora:41 AS tester
 
 LABEL maintainer="Michal Kukowski <kukossw@gmail.com>"
 
+# The CI on github actions is unstable (flaky).
+# Sometimes, the package manager cannot connect to the repository.
+# We need to retry the update and install commands a few times to avoid the failure.
+RUN printf '[main]\nretries=10\n' >> /etc/dnf/dnf.conf
+
 # =============== Install common packages (fonts, bash, locales ...) ===============
 
 # Packages are installed on most distributions, in case of real images (real HW, VM, VDI).
