@@ -4,6 +4,11 @@ LABEL maintainer="Michal Kukowski <kukossw@gmail.com>"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# The CI on github actions is unstable (flaky).
+# Sometimes, the package manager cannot connect to the repository.
+# We need to retry the update and install commands a few times to avoid the failure.
+RUN printf 'Acquire {\n  Retries \"10\";\n};\n' > /etc/apt/apt.conf.d/99retry
+
 # =============== Install common packages (fonts, bash, locales ...) ===============
 
 # Packages are installed on most distributions, in case of real images (real HW, VM, VDI).

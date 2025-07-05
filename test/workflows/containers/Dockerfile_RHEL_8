@@ -5,6 +5,11 @@ FROM registry.access.redhat.com/ubi8/ubi:latest AS tester
 
 LABEL maintainer="Michal Kukowski <kukossw@gmail.com>"
 
+# The CI on github actions is unstable (flaky).
+# Sometimes, the package manager cannot connect to the repository.
+# We need to retry the update and install commands a few times to avoid the failure.
+RUN printf '[main]\nretries=10\n' >> /etc/dnf/dnf.conf
+
 # ======================== MOCK RHEL from RHEL free version ========================
 
 # We are using free version of RHEL, we need to disable the subscription manager to avoid the error about missing subscription.
