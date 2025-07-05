@@ -1,3 +1,11 @@
+# ISSUE:
+#    8 5.971 Error:
+#    8 5.971  Problem: cannot install the best update candidate for package python-unversioned-command-3.12.10-3.el10.noarch
+#    8 5.971   - nothing provides python3 = 3.12.11-2.el10 needed by python-unversioned-command-3.12.11-2.el10.noarch from appstream
+#
+#    To fix this issue I set the dnf to skip any broken package and resfresh the cache each time.
+
+
 FROM quay.io/centos/centos:stream10 AS tester
 
 LABEL maintainer="Michal Kukowski <kukossw@gmail.com>"
@@ -19,7 +27,7 @@ RUN  dnf install -y --nodocs --allowerasing --nobest \
         dnf-plugins-core && \
     dnf config-manager --set-enabled crb
 
-RUN dnf update -y && \
+RUN dnf update -y --refresh --skip-broken && \
     dnf install -y --nodocs --allowerasing --nobest \
         bash \
         coreutils \
@@ -75,7 +83,7 @@ RUN mkdir -p /home/tester-no-root/Downloads && \
 
 USER root
 
-RUN dnf update -y && \
+RUN dnf update -y --refresh --skip-broken && \
     dnf install -y --nodocs --allowerasing --nobest \
         podman && \
     dnf clean all && \
@@ -92,7 +100,7 @@ RUN dnf update -y && \
 # fuse-overlayfs is used for user-mode storage
 # shadow-utils (uidmap) is used for user namespaces (user storage)
 # containernetworking-plugins is used for CNI (Container Network Interface): bridge/portmap/firewall/tuning
-RUN dnf update -y && \
+RUN dnf update -y --refresh --skip-broken && \
     dnf install -y --nodocs --allowerasing --nobest \
         slirp4netns \
         fuse-overlayfs \
@@ -120,7 +128,7 @@ RUN chmod 0755 /usr/bin/newuidmap /usr/bin/newgidmap && \
     chmod -s /usr/bin/newuidmap /usr/bin/newgidmap
 
 # Update ca-certificates to ensure podman can access the internet and download images
-RUN dnf update -y && \
+RUN dnf update -y --refresh --skip-broken && \
     dnf install -y --nodocs --allowerasing --nobest \
         ca-certificates && \
     dnf clean all && \
