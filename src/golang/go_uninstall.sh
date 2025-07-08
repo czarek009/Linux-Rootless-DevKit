@@ -5,7 +5,7 @@ source "${ENV_PATHS_LIB}"
 ENV_CONFIGURATOR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../envConfigurator" && pwd)/envConfigurator.sh"
 source "${ENV_CONFIGURATOR_PATH}"
 
-remove_dirs() {
+GO::remove_dirs() {
 	echo "Removing Go directories"
 	local goroot="${HOME}/.local/go"
 	local gopath="${HOME}/go"
@@ -13,7 +13,7 @@ remove_dirs() {
 }
 
 # shellcheck disable=SC2016
-clean_bashrc() {
+GO::clean_bashrc() {
 	local profile_file="${SHELLRC_PATH}"
 	EnvConfigurator::_remove "${profile_file}" \
 "
@@ -25,11 +25,11 @@ export PATH=\"\$GOROOT/bin:\$GOPATH/bin:\$PATH\""
     echo "Go environment lines removed from ${profile_file}"
 }
 
-main() {
-	remove_dirs
-	clean_bashrc	
+GO::uninstall::main() {
+	GO::remove_dirs
+	GO::clean_bashrc	
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-	main
+	GO::uninstall::main
 fi
