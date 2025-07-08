@@ -61,10 +61,10 @@ Zsh::install()
 
     if [[ ! -f "${HOME}/.zshrc" ]]; then
         Logger::log_info "${HOME}/.zshrc does not exists - creating a new one"
-        touch "${HOME}/.zshrc"
+        EnvConfigurator::create_file_if_not_exists "${HOME}/.zshrc"
     else
         Logger::log_info "${HOME}/.zshrc already exists - backing it up as .zshrc.old"
-        mv "${HOME}/.zshrc" "${HOME}/.zshrc.old"
+        EnvConfigurator::move_file_if_exists "${HOME}/.zshrc" "${HOME}/.zshrc.old" "y"
     fi
 
     # Set $HOME/.local/bin in PATH:
@@ -148,7 +148,7 @@ Zsh::install_theme()
 {
     # Install powerlevel10k theme:
     Logger::log_info "Installing Powerlevel10k theme for oh-my-zsh"
-    rm -f "${HOME}/.p10k.zsh"
+    EnvConfigurator::remove_file_if_exists "${HOME}/.p10k.zsh"
 
     EnvConfigurator::git_clone_if_not_exists "https://github.com/romkatv/powerlevel10k.git" "${HOME}/.oh-my-zsh/custom/themes" > /dev/null 2>&1
     if EnvConfigurator::_exists "${HOME}/.zshrc" "ZSH_THEME" >/dev/null;then
@@ -165,7 +165,7 @@ Zsh::install_theme()
     PRECONFIGURED_P10K="${PRECONFIGURED_DIR}/.p10k.zsh"
     if [[ -f "${PRECONFIGURED_P10K}" ]]; then
         Logger::log_info "Copying preconfigured .p10k.zsh to ${HOME}"
-        cp "${PRECONFIGURED_P10K}" "${HOME}/.p10k.zsh"
+        EnvConfigurator::copy_file_if_exists "${PRECONFIGURED_P10K}" "${HOME}/.p10k.zsh"
     else
         Logger::log_warning "No preconfigured .p10k.zsh found in preconfigured directory"
     fi
