@@ -10,7 +10,7 @@ LinuxRootlessDevKit::install()
       source "${PROJECT_TOP_DIR}/src/bash/omb_install.sh"
       Omb::install || exit 1
     else
-      echo "Error: Could not find omb_install.sh at ${PROJECT_TOP_DIR}/src/bash/omb_install.sh"
+      Logger::log_error "Error: Could not find omb_install.sh at ${PROJECT_TOP_DIR}/src/bash/omb_install.sh"
       exit 1
     fi
   elif [[ "$1" == "zsh" ]]; then
@@ -20,7 +20,7 @@ LinuxRootlessDevKit::install()
     export PATH="$HOME/.local/bin:$PATH"
     source "$HOME/.bashrc"
   else
-    echo "Error: Unsupported shell '$1'. Use 'bash' or 'zsh'." >&2
+    Logger::log_error "Error: Unsupported shell '$1'. Use 'bash' or 'zsh'." >&2
     exit 1
   fi
 
@@ -30,7 +30,7 @@ LinuxRootlessDevKit::install()
   if [[ -f "${RUST_INSTALL_PATH}" ]]; then
       source "${RUST_INSTALL_PATH}"
   else
-      echo "Error: Could not find rust_install.sh at ${RUST_INSTALL_PATH}"
+      Logger::log_error "Error: Could not find rust_install.sh at ${RUST_INSTALL_PATH}"
       exit 1
   fi
   # Install rust with shell config file as an argument
@@ -43,7 +43,7 @@ LinuxRootlessDevKit::install()
   if [[ -f "${RUST_TOOLS_INSTALL_PATH}" ]]; then
       source "${RUST_TOOLS_INSTALL_PATH}"
   else
-      echo "Error: Could not find rust_install_cli_tools.sh at ${RUST_TOOLS_INSTALL_PATH}"
+      Logger::log_error "Error: Could not find rust_install_cli_tools.sh at ${RUST_TOOLS_INSTALL_PATH}"
       exit 1
   fi
   # Install all defined rust tools with shell config file as an argument
@@ -66,7 +66,7 @@ LinuxRootlessDevKit::verify_installation()
       source "${PROJECT_TOP_DIR}/src/bash/omb_install.sh"
       Omb::verify_installation || exit 1
     else
-      echo "Error: Could not find omb_install.sh at ${PROJECT_TOP_DIR}/src/bash/omb_install.sh"
+      Logger::log_error "Error: Could not find omb_install.sh at ${PROJECT_TOP_DIR}/src/bash/omb_install.sh"
       exit 1
     fi
   elif [[ "$1" == "zsh" ]]; then
@@ -74,13 +74,13 @@ LinuxRootlessDevKit::verify_installation()
     # Verify installation
     if command -v zsh >/dev/null 2>&1; then
       zsh --version
-      echo "✅ zsh successfully installed."
+      Logger::log_success "✅ zsh successfully installed."
     else
-      echo "❌ zsh not found after install."
+      Logger::log_error "❌ zsh not found after install."
       exit 1
     fi
   else
-    echo "Error: Unsupported shell '$1'. Use 'bash' or 'zsh'." >&2
+    Logger::log_error "Error: Unsupported shell '$1'. Use 'bash' or 'zsh'." >&2
     exit 1
   fi
 
@@ -89,7 +89,7 @@ LinuxRootlessDevKit::verify_installation()
   if command -v rustc >/dev/null 2>&1; then
     rustc --version
   else
-    echo "❌ rustc not found after install."
+    Logger::log_error "❌ rustc not found after install."
     exit 1
   fi
 
@@ -102,7 +102,7 @@ LinuxRootlessDevKit::verify_installation()
   if command -v go >/dev/null 2>&1; then
     go version
   else
-    echo "❌ Go not found after install."
+    Logger::log_error "❌ Go not found after install."
     exit 1
   fi
 }
@@ -119,7 +119,7 @@ LinuxRootlessDevKit::uninstall()
       source "${PROJECT_TOP_DIR}/src/bash/omb_uninstall.sh"
       Omb::uninstall || exit 1
     else
-      echo "Error: Could not find omb_uninstall.sh at ${PROJECT_TOP_DIR}/src/bash/omb_uninstall.sh"
+      Logger::log_error "Error: Could not find omb_uninstall.sh at ${PROJECT_TOP_DIR}/src/bash/omb_uninstall.sh"
       exit 1
     fi
   elif [[ "$1" == "zsh" ]]; then
@@ -128,7 +128,7 @@ LinuxRootlessDevKit::uninstall()
     bash ./src/zsh/zsh_uninstall.sh
     source "$HOME/.bashrc"
   else
-    echo "Error: Unsupported shell '$1'. Use 'bash' or 'zsh'." >&2
+    Logger::log_error "Error: Unsupported shell '$1'. Use 'bash' or 'zsh'." >&2
     exit 1
   fi
 
@@ -138,7 +138,7 @@ LinuxRootlessDevKit::uninstall()
   if [[ -f "${RUST_TOOLS_UNINSTALL_PATH}" ]]; then
       source "${RUST_TOOLS_UNINSTALL_PATH}"
   else
-      echo "Error: Could not find rust_uninstall_cli_tools.sh at ${RUST_TOOLS_UNINSTALL_PATH}"
+      Logger::log_error "Error: Could not find rust_uninstall_cli_tools.sh at ${RUST_TOOLS_UNINSTALL_PATH}"
       exit 1
   fi
   # Uninstall all defined rust tools with shell config file as an argument
@@ -150,7 +150,7 @@ LinuxRootlessDevKit::uninstall()
   if [[ -f "${RUST_UNINSTALL_PATH}" ]]; then
       source "${RUST_UNINSTALL_PATH}"
   else
-      echo "Error: Could not find rust_uninstall.sh at ${RUST_UNINSTALL_PATH}"
+      Logger::log_error "Error: Could not find rust_uninstall.sh at ${RUST_UNINSTALL_PATH}"
       exit 1
   fi
   # Uninstall Rust with shell config file as an argument
@@ -173,20 +173,20 @@ LinuxRootlessDevKit::verify_uninstallation()
       source "${PROJECT_TOP_DIR}/src/bash/omb_uninstall.sh"
       Omb::verify_uninstallation || exit 1
     else
-      echo "Error: Could not find omb_uninstall.sh at ${PROJECT_TOP_DIR}/src/bash/omb_uninstall.sh"
+      Logger::log_error "Error: Could not find omb_uninstall.sh at ${PROJECT_TOP_DIR}/src/bash/omb_uninstall.sh"
       exit 1
     fi
   elif [[ "$1" == "zsh" ]]; then
     ################### ZSH ###################
     # Verify uninstallation
     if [ ! -d "$HOME/.oh-my-zsh" ] && [ ! -d "$HOME/.local/bin/zsh" ]; then
-      echo "✅ zsh successfully uninstalled."
+      Logger::log_success "✅ zsh successfully uninstalled."
     else
-      echo "❌ zsh files still exist after uninstall."
+      Logger::log_error "❌ zsh files still exist after uninstall."
       exit 1
     fi
   else
-    echo "Error: Unsupported shell '$1'. Use 'bash' or 'zsh'." >&2
+    Logger::log_error "Error: Unsupported shell '$1'. Use 'bash' or 'zsh'." >&2
     exit 1
   fi
 
@@ -197,18 +197,18 @@ LinuxRootlessDevKit::verify_uninstallation()
   ### RUST ###
   # Verify Rust uninstallation
   if [ ! -d "$HOME/.cargo" ] && [ ! -d "$HOME/.rustup" ]; then
-    echo "✅ Rust successfully uninstalled."
+    Logger::log_success "✅ Rust successfully uninstalled."
   else
-    echo "❌ Rust files still exist after uninstall."
+    Logger::log_error "❌ Rust files still exist after uninstall."
     exit 1
   fi
 
   ### GO ###
   # Verify Go uninstallation
   if [ ! -d "$HOME/go" ] && [ ! -d "$HOME/.local/go" ]; then
-    echo "✅ Go successfully uninstalled."
+    Logger::log_success "✅ Go successfully uninstalled."
   else
-    echo "❌ Go files still exist after uninstall."
+    Logger::log_error "❌ Go files still exist after uninstall."
     exit 1
   fi
 }

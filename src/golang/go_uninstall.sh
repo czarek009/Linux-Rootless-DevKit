@@ -4,12 +4,13 @@ ENV_PATHS_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/env_variables.sh
 source "${ENV_PATHS_LIB}"
 ENV_CONFIGURATOR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../envConfigurator" && pwd)/envConfigurator.sh"
 source "${ENV_CONFIGURATOR_PATH}"
+LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../logger" && pwd)/script_logger.sh"
+source "$LOGGER_PATH"
 
 remove_dirs() {
-	echo "Removing Go directories"
-	local goroot="${HOME}/.local/go"
-	local gopath="${HOME}/go"
-	rm -rf "${goroot}" "${gopath}"
+    Logger::log_info "Removing Go directories"
+    EnvConfigurator::remove_dir_if_exists "${HOME}/.local/go" "y"
+    EnvConfigurator::remove_dir_if_exists "${HOME}/go" "y"
 }
 
 # shellcheck disable=SC2016
@@ -22,7 +23,7 @@ unset -f go 2> /dev/null
 export GOROOT=\"${HOME}/.local/go\"
 export GOPATH=\"${HOME}/go\"
 export PATH=\"\$GOROOT/bin:\$GOPATH/bin:\$PATH\""
-    echo "Go environment lines removed from ${profile_file}"
+    Logger::log_info "Go environment lines removed from ${profile_file}"
 }
 
 main() {
@@ -31,5 +32,5 @@ main() {
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-	main
+    main
 fi
