@@ -5,8 +5,9 @@
 Rust::install() {
     local rustup_url="https://sh.rustup.rs"
     local rustup_init="rustup-init.sh"
-    local shellrc_path=$1
-    local cargo_path_line="export PATH=\"${HOME}/.cargo/bin:${PATH}\""
+    local shellrc_path="$1"
+    local rust_version="${2:-stable}"  # Accept a specific version or default to 'stable'
+    local cargo_path_line="export PATH=\"${HOME}/.cargo/bin:\$PATH\""
     local temp_log
     temp_log=$(mktemp)
 
@@ -14,10 +15,10 @@ Rust::install() {
 
     curl --proto '=https' --tlsv1.2 -sSf "${rustup_url}" -o "${rustup_init}" && chmod +x "${rustup_init}"
 
-    echo "[*] Installing Rust"
+    echo "[*] Installing Rust (version: ${rust_version})"
 
     if RUSTUP_INIT_SKIP_PATH_CHECK=yes ./"${rustup_init}" -y \
-        --default-toolchain stable \
+        --default-toolchain "${rust_version}" \
         --profile default \
         --no-modify-path >"${temp_log}" 2>&1; then
 
@@ -27,7 +28,7 @@ Rust::install() {
             echo "${cargo_path_line}" >> "${shellrc_path}"
         fi
 
-        echo "Rust successfully installed."
+        echo "Rust ${rust_version} successfully installed."
         return 0
     else
         echo "Rust installation failed. See log:"
@@ -36,4 +37,3 @@ Rust::install() {
         return 1
     fi
 }
-

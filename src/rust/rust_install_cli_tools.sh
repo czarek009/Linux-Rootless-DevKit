@@ -5,8 +5,8 @@ Rust::Cli::install_tool() {
     local shellrc_path="$1"
     local tool_name="$2"
     local command_name="$3"
-    local install_flags="$4"
-    local shell_init="$5"
+    local shell_init="$4"
+    local tool_version="$5"
     local temp_log
     temp_log=$(mktemp)
 
@@ -18,7 +18,7 @@ Rust::Cli::install_tool() {
 
     echo "[*] Installing ${tool_name}..."
 
-    if cargo install "${install_flags}" "${tool_name}" >"${temp_log}" 2>&1; then
+    if cargo install "${tool_name}" "${tool_version}" >"${temp_log}" 2>&1; then
         echo "${tool_name} installed successfully"
         rm -f "${temp_log}"
 
@@ -62,8 +62,8 @@ Rust::Cli::install_all_tools() {
     Rust::Cli::check_cargo_available || exit 1
 
     for entry in "${RUST_CLI_TOOLS[@]}"; do
-        read -r tool_name binary flags shell_init <<< "$(Rust::Cli::parse_tool_entry "${entry}")"
-        Rust::Cli::install_tool "${shellrc_path}" "${tool_name}" "${binary}" "${flags}" "${shell_init}" || exit 1
+        read -r tool_name binary shell_init <<< "$(Rust::Cli::parse_tool_entry "${entry}")"
+        Rust::Cli::install_tool "${shellrc_path}" "${tool_name}" "${binary}" "${shell_init}" || exit 1
     done
 }
 
@@ -84,7 +84,7 @@ Rust::Cli::verify_installed() {
 
     echo "Verifying installed Rust CLI tools:"
     for entry in "${RUST_CLI_TOOLS[@]}"; do
-        read -r tool_name binary _ _ <<< "$(Rust::Cli::parse_tool_entry "${entry}")"
+        read -r tool_name binary _ <<< "$(Rust::Cli::parse_tool_entry "${entry}")"
 
         if command -v "${binary}" &>/dev/null; then
             echo "${tool_name} is successfully installed"

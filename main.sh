@@ -62,9 +62,13 @@ EnvConfigurator::remove_dir_if_exists "$TEST_LOG_DIR" "y"
 
 EnvConfigurator::create_file_if_not_exists "${SHELLRC_PATH}"
 
-source ./LinuxRootlessDevKit.sh
+source ${PROJECT_TOP_DIR}/src/envConfigurator/envConfigurator.sh
 
-LinuxRootlessDevKit::install "${SELECTED_SHELL}"
-LinuxRootlessDevKit::verify_installation "${SELECTED_SHELL}"
-LinuxRootlessDevKit::uninstall "${SELECTED_SHELL}"
-LinuxRootlessDevKit::verify_uninstallation "${SELECTED_SHELL}"
+source ./LinuxRootlessDevKit.sh
+LinuxRootlessDevKit::configuration_setup
+LinuxRootlessDevKit::parse_config
+LinuxRootlessDevKit::generate_profile_settings "MASTER"
+LinuxRootlessDevKit::install
+# LinuxRootlessDevKit::verify_installation
+# LinuxRootlessDevKit::uninstall
+# LinuxRootlessDevKit::verify_uninstallation
