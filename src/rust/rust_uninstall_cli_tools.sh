@@ -61,7 +61,7 @@ Rust::Cli::uninstall_all_tools() {
     Rust::Cli::check_cargo_available || exit 1
 
     for entry in "${RUST_CLI_TOOLS[@]}"; do
-        read -r tool_name binary _ shell_init <<< "$(Rust::Cli::parse_tool_entry "${entry}")"
+        read -r tool_name binary shell_init <<< "$(Rust::Cli::parse_tool_entry "${entry}")"
         Rust::Cli::uninstall_tool "${shellrc_path}" "${tool_name}" "${binary}" "${shell_init}"
     done
 }
@@ -84,7 +84,7 @@ Rust::Cli::verify_uninstalled() {
     # Verify defined rust tools
     echo "Verifying uninstallation of Rust CLI tools:"
     for entry in "${RUST_CLI_TOOLS[@]}"; do
-        read -r tool_name binary _ _ <<< "$(Rust::Cli::parse_tool_entry "${entry}")"
+        read -r tool_name binary _ <<< "$(Rust::Cli::parse_tool_entry "${entry}")"
         if command -v "${binary}" >/dev/null 2>&1 | cargo install --list | grep -q "^${tool_name} v"; then
             echo "${tool_name} still exist after uninstall"
 	    return 1

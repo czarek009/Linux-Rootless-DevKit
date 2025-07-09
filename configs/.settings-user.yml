@@ -1,0 +1,30 @@
+shell: zsh
+oh_my_x_install: y
+zsh:
+  plugins: y
+  fonts: y
+  theme: y
+  aliases: y
+rust_install: y
+rust_tools:
+  zoxide:
+    install: y
+  git-delta:
+    install: y
+  atuin:
+    install: y
+  procs:
+    install: y
+  du-dust:
+    install: y
+  ripgrep:
+    install: y
+  tealdeer:
+    install: y
+  tokei:
+    install: y
+  gitui:
+    install: y
+  eza:
+    install: y
+go_install: y

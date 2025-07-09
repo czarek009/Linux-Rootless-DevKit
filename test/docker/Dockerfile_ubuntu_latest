@@ -34,7 +34,15 @@ RUN mkdir -p /opt/cmake && \
     ./cmake-3.27.2-linux-x86_64.sh --skip-license --prefix=/opt/cmake && \
     ln -s /opt/cmake/bin/* /usr/local/bin/ && rm cmake-3.27.2-linux-x86_64.sh && \
     cmake --version
- 
+
+# --- install yq v4.40.5 ---
+RUN mkdir -p /opt/yq && \
+    curl -LO https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_amd64 && \
+    chmod +x yq_linux_amd64 && \
+    mv yq_linux_amd64 /opt/yq/yq && \
+    ln -s /opt/yq/yq /usr/local/bin/yq && \
+    yq --version
+
 COPY . /app
 WORKDIR /app
 

@@ -20,6 +20,7 @@ RUN dnf -y update && \
 	perl \
 	fontconfig \
 	nano \
+	yq \
 	glibc-langpack-en && \
 	localedef -i en_US -f UTF-8 en_US.UTF-8 || true && \
 	echo "set linenumbers" >> /etc/nanorc &&\
