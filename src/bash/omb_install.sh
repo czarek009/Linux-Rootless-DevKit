@@ -14,7 +14,11 @@ Omb::install()
 
   bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
 
-  mv "${HOME}"/.bashrc.omb-backup* "${BACKUP_PATH}"
+  for file in "${HOME}"/.bashrc.omb-backup*; do
+    if [[ -f "$file" ]]; then
+        EnvConfigurator::move_file_if_exists "$file" "${BACKUP_PATH}/$(basename "$file")" "y"
+    fi
+  done
 }
 
 Omb::verify_installation()

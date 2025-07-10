@@ -1,25 +1,24 @@
 #!/usr/bin/env bash
 set -e
 
-# GLOBAL library: env_paths_lib
+# GLOBAL library: env_variables and  envConfigrautor
 # Parameter for setting shell config file that will be used by a user (bashrc/zshrc)
 # TODO: Needs to be modifiable by the initial script configuration.
 
 ENV_PATHS_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/src/env_variables.sh"
 source "${ENV_PATHS_LIB}"
+ENV_CONFIGURATOR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/src/envConfigurator/envConfigurator.sh"
+source "${ENV_CONFIGURATOR_PATH}"
+LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/src/logger" && pwd)/script_logger.sh"
+source "$LOGGER_PATH"
 
 # Run envConfigurator test sequence:
-echo "ℹ️ Running envConfigurator test sequence..."
-bash ./src/envConfigurator/test_envConfigurator.sh
-wait
-
-# Run envConfigurator test sequence:
-echo "ℹ️ Running envConfigurator test sequence..."
+Logger::log_info "ℹ️ Running envConfigurator test sequence..."
 bash ./src/envConfigurator/test_envConfigurator.sh
 wait
 
 # Run logger test sequence:
-echo "ℹ️ Running logger test sequence..."
+Logger::log_info "ℹ️ Running logger test sequence..."
 TEST_LOG_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )/src/logger/logs"
 bash ./src/logger/test_logger.sh
 wait
@@ -35,13 +34,13 @@ logger_check_str()
 
   if [ -n "$log_file" ] && [ -f "$log_file" ]; then
     if grep -Fq "$search_str" "$log_file" &> /dev/null; then
-        echo "✅ File '$log_file' contains string '$search_str'."
+        Logger::log_success "✅ File '$log_file' contains string '$search_str'."
     else
-        echo "❌ File '$log_file' does not contain string '$search_str'."
+        Logger::log_error "❌ File '$log_file' does not contain string '$search_str'."
         exit 1
     fi
   else
-    echo "❌ No log file found with prefix '$file_prefix' in '$log_dir'."
+    Logger::log_error "❌ No log file found with prefix '$file_prefix' in '$TEST_LOG_DIR'."
     exit 1
   fi
 }
@@ -54,13 +53,9 @@ logger_check_str "test_logger" "this/file/does/not/exist' does not exist"
 logger_check_str "test_logger" "Command 'ls' exists"
 logger_check_str "test_logger" "Command 'thiscommanddoesnotexist' does not exist"
 logger_check_str "testTraps" "Script interrupted by user"
-rm -r "$TEST_LOG_DIR"
+EnvConfigurator::remove_dir_if_exists "$TEST_LOG_DIR" "y"
 
-
-if [ ! -f "${SHELLRC_PATH}" ]
-then
-  touch "${SHELLRC_PATH}"
-fi
+EnvConfigurator::create_file_if_not_exists "${SHELLRC_PATH}"
 
 source ./LinuxRootlessDevKit.sh
 

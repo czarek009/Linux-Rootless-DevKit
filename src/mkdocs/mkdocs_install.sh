@@ -26,6 +26,7 @@ if ! command -v pipx &>/dev/null; then
     python3 -m pipx ensurepath
     export PATH="$HOME/.local/bin:$PATH"
 fi
+
 Logger::log_info "Installing MkDocs and plugins to user environment..."
 
 # Upgrade pipx

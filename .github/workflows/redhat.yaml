@@ -1,0 +1,24 @@
+name: RHEL
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ main, development ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os_version: [ "8" ]
+        shell: [ "zsh", "bash" ]
+
+    steps:
+      - name: Environment Preparation
+        uses: actions/checkout@v3
+
+      - name: Build and run Docker container
+        run:
+          ./test/test_dockerfile_main.sh "Dockerfile_redhat_${{ matrix.os_version }}" "tester:redhat-${{ matrix.os_version }}" -e SELECTED_SHELL="${{ matrix.shell }}"
