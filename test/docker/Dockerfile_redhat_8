@@ -19,7 +19,8 @@ RUN dnf -y update && \
         perl \
         fontconfig \
         glibc-locale-source \
-        glibc-langpack-en && \
+        glibc-langpack-en \
+        diffutils && \
     dnf clean all &&\
     rm -rf /var/cache/dnf /tmp/* /root/.cache
 

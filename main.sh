@@ -7,6 +7,8 @@ set -e
 
 ENV_PATHS_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/src/env_variables.sh"
 source "${ENV_PATHS_LIB}"
+# ENVCONFIGURATOR_DIR_PATH="$( cd -- "$(dirname "${BASH_SOURCE[0]}")/src/envConfigurator" >/dev/null 2>&1 || exit ; pwd -P )"
+# source "$ENVCONFIGURATOR_DIR_PATH/envConfigurator.sh"
 ENV_CONFIGURATOR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/src/envConfigurator/envConfigurator.sh"
 source "${ENV_CONFIGURATOR_PATH}"
 LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/src/logger" && pwd)/script_logger.sh"
@@ -14,14 +16,16 @@ source "$LOGGER_PATH"
 
 # Run envConfigurator test sequence:
 Logger::log_info "ℹ️ Running envConfigurator test sequence..."
-bash ./src/envConfigurator/test_envConfigurator.sh
-wait
+source "./src/envConfigurator/test_envConfigurator.sh"
+EnvConfigurator::test
 
 # Run logger test sequence:
 Logger::log_info "ℹ️ Running logger test sequence..."
 TEST_LOG_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )/src/logger/logs"
-bash ./src/logger/test_logger.sh
-wait
+source "./src/logger/test_logger.sh"
+set +e
+Logger::test
+set -e
 
 # Verify logger results:
 logger_check_str()
@@ -44,6 +48,7 @@ logger_check_str()
     exit 1
   fi
 }
+
 logger_check_str "test_logger" "Starting logger test"
 logger_check_str "test_logger" "This is a warning message"
 logger_check_str "test_logger" "This is an error message"
