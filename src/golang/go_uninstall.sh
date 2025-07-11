@@ -7,14 +7,16 @@ source "${ENV_CONFIGURATOR_PATH}"
 LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../logger" && pwd)/script_logger.sh"
 source "$LOGGER_PATH"
 
-remove_dirs() {
+GO::remove_dirs() {
+	Logger::log_info "Cleaning Go modules cache"
+	go clean -modcache
     Logger::log_info "Removing Go directories"
     EnvConfigurator::remove_dir_if_exists "${HOME}/.local/go" "y"
     EnvConfigurator::remove_dir_if_exists "${HOME}/go" "y"
 }
 
 # shellcheck disable=SC2016
-clean_bashrc() {
+GO::clean_bashrc() {
 	local profile_file="${SHELLRC_PATH}"
 	EnvConfigurator::_remove "${profile_file}" \
 "
@@ -26,11 +28,11 @@ export PATH=\"\$GOROOT/bin:\$GOPATH/bin:\$PATH\""
     Logger::log_info "Go environment lines removed from ${profile_file}"
 }
 
-main() {
-	remove_dirs
-	clean_bashrc	
+GO::uninstall::main() {
+	GO::remove_dirs
+	GO::clean_bashrc	
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    main
+	GO::uninstall::main
 fi
