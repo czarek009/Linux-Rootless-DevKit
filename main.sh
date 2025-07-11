@@ -61,5 +61,3 @@ source ./LinuxRootlessDevKit.sh
 
 LinuxRootlessDevKit::install "${SELECTED_SHELL}"
 LinuxRootlessDevKit::verify_installation "${SELECTED_SHELL}"
-LinuxRootlessDevKit::uninstall "${SELECTED_SHELL}"
-LinuxRootlessDevKit::verify_uninstallation "${SELECTED_SHELL}"
