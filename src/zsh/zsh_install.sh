@@ -250,11 +250,3 @@ Logger::log_info "Latest Zsh version: ${ZSH_VERSION}"
 
 EnvConfigurator::create_dir_if_not_exists "${INSTALL_DIR}" > /dev/null
 EnvConfigurator::create_dir_if_not_exists "${SRC_DIR}" > /dev/null
-
-Zsh::install
-Zsh::install_plugins
-Zsh::install_fonts
-Zsh::install_theme
-Zsh::configure
-Zsh::set_aliases
-Zsh::verify_installation
