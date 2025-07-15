@@ -38,19 +38,6 @@ else
     Logger::log_warning "Zsh binary not found in ${INSTALL_DIR}/bin, skipping."
 fi
 
-# Remove source directory
-if [[ -d "${SRC_DIR}/zsh-${ZSH_VERSION}" ]]; then
-    Logger::log_info "Removing zsh source directory..."
-    rm -rf "${SRC_DIR}/zsh-${ZSH_VERSION}"
-fi
-
-if [[ -f "${SRC_DIR}/zsh-${ZSH_VERSION}.tar.xz" ]]; then
-    Logger::log_info "Removing zsh archive..."
-    rm -f "${SRC_DIR}/zsh-${ZSH_VERSION}.tar.xz"
-fi
-
-# Clean up .bashrc and .zshrc
-
 # Remove 'exec zsh' and 'local/bin' export from .bashrc
 if [[ -f "${BASHRC}" ]]; then
     Logger::log_info "Cleaning up .bashrc..."
@@ -69,4 +56,5 @@ Logger::log_info "Removing zsh leftovers..."
 rm -f ~/.zshrc ~/.zsh_history ~/.zshenv ~/.zprofile ~/.zlogin ~/.p10k.zsh
 
 ##### DONE:
-Logger::log_info "Uninstall done - restart ur terminal"
+Logger::log_success "Uninstall complete"
+Logger::log_userAction "Please restart ur terminal"
