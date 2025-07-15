@@ -9,11 +9,16 @@ set -e
 # Show executed commanmds:
 #set -x
 
+INSTALL_DIR="${HOME}/.local"
+SRC_DIR="${HOME}/src"
 LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../logger" && pwd)/script_logger.sh"
 ENV_CONFIGURATOR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../envConfigurator" && pwd)/envConfigurator.sh"
 PRECONFIGURED_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/preconfigured" && pwd)"
 source "${LOGGER_PATH}"
 source "${ENV_CONFIGURATOR_PATH}"
+
+ZSH_FONTS_INSTALLED="n"
+P10K_INSTALLED="n"
 
 Zsh::get_latest_available_zsh_version() 
 {
@@ -21,6 +26,31 @@ Zsh::get_latest_available_zsh_version()
     | grep -oP 'zsh-\K[0-9]+\.[0-9]+(\.[0-9]+)?(?=\.tar\.xz)' \
     | sort -V \
     | tail -1
+}
+
+Zsh::get_available_zsh_versions() 
+{
+    curl -s "https://sourceforge.net/projects/zsh/rss?path=/zsh" \
+    | grep -oP 'zsh-\K[0-9]+\.[0-9]+(\.[0-9]+)?(?=\.tar\.xz)' \
+    | sort -V \
+    | uniq
+}
+
+Zsh::check_selected_version_is_available()
+{
+    local selected_version="$1"
+    local available_versions
+    available_versions=$(Zsh::get_available_zsh_versions)
+
+    if [[ -z "$selected_version" ]]; then
+        echo 1
+    fi
+
+    if echo "$available_versions" | grep -q "^${selected_version}$"; then
+        echo 0
+    else
+        echo 2
+    fi
 }
 
 Zsh::install()
@@ -39,10 +69,10 @@ Zsh::install()
         Logger::log_info "Using preconfigured Zsh archive: ${PRECONFIGURED_ARCHIVE}"
         cp "${PRECONFIGURED_ARCHIVE}" .
     elif [[ -n "${PRECONF_VERSION}" ]]; then
-        Logger::log_warn "Preconfigured Zsh version (${PRECONF_VERSION}) is not the latest (${ZSH_VERSION}) - downloading latest"
+        Logger::log_warning "Preconfigured Zsh version (${PRECONF_VERSION}) is not the latest (${ZSH_VERSION}) - downloading zsh ${ZSH_VERSION}"
         curl -LO "https://sourceforge.net/projects/zsh/files/zsh/${ZSH_VERSION}/zsh-${ZSH_VERSION}.tar.xz"
     else
-        Logger::log_warn "No preconfigured Zsh archive found - downloading latest"
+        Logger::log_warning "No preconfigured Zsh archive found - downloading latest"
         curl -LO "https://sourceforge.net/projects/zsh/files/zsh/${ZSH_VERSION}/zsh-${ZSH_VERSION}.tar.xz"
     fi
 
@@ -75,6 +105,11 @@ Zsh::install()
         source "${HOME}"/.zshrc
     fi
 
+    Logger::log_info "Finished installing zsh"
+}
+
+Zsh::install_oh_my_zsh()
+{
     # Install oh-my-zsh
     export RUNZSH=no
     export ZSH="${HOME}/.oh-my-zsh"
@@ -88,8 +123,6 @@ Zsh::install()
     else
         Logger::log_warning "Oh-my-zsh already exists at ${ZSH}"
     fi
-
-    Logger::log_info "Finished installing zsh and oh-my-zsh"
 }
 
 Zsh::install_plugins()
@@ -141,6 +174,7 @@ Zsh::install_fonts()
     cd "pl-fonts/fonts" || exit
     ./install.sh > /dev/null 2>&1
 
+    ZSH_FONTS_INSTALLED="y"
     Logger::log_info "Finished installing fonts"
 }
 
@@ -183,6 +217,7 @@ fi' 1
     "# To customize prompt, run p10k configure or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh"
 
+    P10K_INSTALLED="y"
     Logger::log_info "Finished installing theme for oh-my-zsh"
 }
 
@@ -204,9 +239,13 @@ Zsh::verify_installation()
     # Check if zsh is installed
     if [[ -x "${INSTALL_DIR}/bin/zsh" ]]; then
         Logger::log_success "Zsh installed successfully at ${INSTALL_DIR}/bin/zsh"
-        Logger::log_userAction "Font  '${FONT_NAME}' installed. Please set it in your terminal preferences"
-        Logger::log_userAction "Run \"p10k configure\" to run prompt configurator"
-        Logger::log_userAction "Please restart your terminal"
+        if [[ "$ZSH_FONTS_INSTALLED" == "y" ]]; then
+            Logger::log_userAction "Font  '${FONT_NAME}' installed. Please set it in your terminal preferences"
+        fi
+        if [[ "$P10K_INSTALLED" == "y" ]]; then
+            Logger::log_userAction "Powerlevel10k theme installed. Please run 'p10k configure' to set it up"
+        fi
+        Logger::log_userAction "Please restart your terminal and type 'zsh' to start using it"
     else
         Logger::log_error "Zsh installation failed or zsh not found at ${INSTALL_DIR}/bin/zsh"
     fi
@@ -214,19 +253,6 @@ Zsh::verify_installation()
 
 Zsh::set_as_default_shell()
 {
-    # Set zsh as default:
-
-    # TODO: Implement a way to set ZSH as default shell
-    # if ! grep -q "$ZSH_BIN" "$HOME/.bashrc"; then
-    #     {
-    #         echo "
-    # # Start zsh if available
-    # if [ -x \"$ZSH_BIN\" ] && [ \"\$SHELL\" != \"$ZSH_BIN\" ]; then
-    #     #export SHELL=\"$HOME/.local/bin/zsh\"
-    #     exec \"$ZSH_BIN\"
-    # fi" >> "$HOME/.bashrc"
-    #     } >> "$HOME/.bashrc"
-    # fi
     Logger::log_warning "Setting zsh as default shell - no implementation yet"
 }
 
@@ -239,14 +265,69 @@ Zsh::configure()
 Zsh::clean_up()
 {
     Logger::log_info "Cleaning up temporary files"
-    rm -rf "${SRC_DIR}/zsh-${ZSH_VERSION}" "${SRC_DIR}/zsh-${ZSH_VERSION}.tar.xz" "${SRC_DIR}/pl-fonts"
+    rm -rf  "${SRC_DIR}/pl-fonts"
+    
+    # Remove source directory
+    if [[ -d "${SRC_DIR}/zsh-${ZSH_VERSION}" ]]; then
+        Logger::log_info "Removing zsh source directory..."
+        rm -rf "${SRC_DIR}/zsh-${ZSH_VERSION}"
+    fi
+
+    if [[ -f "${SRC_DIR}/zsh-${ZSH_VERSION}.tar.xz" ]]; then
+        Logger::log_info "Removing zsh archive..."
+        rm -f "${SRC_DIR}/zsh-${ZSH_VERSION}.tar.xz"
+    fi
 }
 
-Logger::log_info "Starting Zsh installation script"
-INSTALL_DIR="${HOME}/.local"
-SRC_DIR="${HOME}/src"
-ZSH_VERSION="$(Zsh::get_latest_available_zsh_version)"
-Logger::log_info "Latest Zsh version: ${ZSH_VERSION}"
+Zsh::install_with_config() 
+{
+    local install_oh_my=$1
+    local install_plugins=$2
+    local install_fonts=$3
+    local install_theme=$4
+    local install_aliases=$5
+    local zsh_install_version=$6
 
-EnvConfigurator::create_dir_if_not_exists "${INSTALL_DIR}" > /dev/null
-EnvConfigurator::create_dir_if_not_exists "${SRC_DIR}" > /dev/null
+    EnvConfigurator::create_dir_if_not_exists "${INSTALL_DIR}" > /dev/null
+    EnvConfigurator::create_dir_if_not_exists "${SRC_DIR}" > /dev/null
+
+    if [[ "$zsh_install_version" == "latest" ]]; then
+        ZSH_VERSION="$(Zsh::get_latest_available_zsh_version)"
+    else
+        if [[ "$(Zsh::check_selected_version_is_available "$zsh_install_version")" != 0 ]]; then
+            Logger::log_error "Selected Zsh version \"${zsh_install_version}\" is not available"
+            exit 1
+        fi
+        ZSH_VERSION="${zsh_install_version}"
+    fi
+
+    Logger::log_debug " \
+Installing Zsh with configuration options:
+    - Version: ${ZSH_VERSION}
+    - Oh-My-Zsh: ${install_oh_my}
+    - Plugins: ${install_plugins}
+    - Fonts: ${install_fonts}
+    - Theme: ${install_theme}
+    - Aliases: ${install_aliases}"
+    Zsh::install
+
+    if [[ "$install_oh_my" == "y" ]]; then
+        Zsh::install_oh_my_zsh
+
+        if [[ "$install_plugins" == "y" ]]; then
+            Zsh::install_plugins
+        fi
+        if [[ "$install_fonts" == "y" ]]; then
+            Zsh::install_fonts
+        fi
+        if [[ "$install_theme" == "y" ]]; then
+            Zsh::install_theme
+        fi
+        if [[ "$install_aliases" == "y" ]]; then
+            Zsh::set_aliases
+        fi
+    fi
+
+    Zsh::configure
+    Zsh::clean_up
+}
