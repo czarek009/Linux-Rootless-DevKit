@@ -1,24 +1,28 @@
-site_name: Better Linux VDI
+site_name: Linux Rootless DevKit
 nav:
-  - Main page:
+  - Overview:
     - index.md
-  - Modules:
-    - modules/index.md
-    - Rust:
-        modules/rust.md
-    - Go:
-        modules/go.md
-    - OhMyBash:
-        modules/ohmybash.md
-    - OhMyZsh:
-        modules/ohmyzsh.md
-  - Help:
-      - MkDocs:
-          help/mkdocs.md
-      - Markdown:
-          help/markdown.md
+  - User:
+    - Modules:
+        - Rust:
+            user/modules/rust.md
+        - Go:
+            user/modules/go.md
+        - OhMyBash:
+            user/modules/ohmybash.md
+        - OhMyZsh:
+            user/modules/ohmyzsh.md
+        - MkDocs:
+            user/modules/mkdocs.md
+  - Developer:
+    - Help:
+        - MkDocs:
+            developer/help/mkdocs.md
+        - Markdown:
+            developer/help/markdown.md
 theme:
   name: material
+  favicon: images/RootlessDevkit_logo.png
   features:
     - content.tooltips
     - navigation.tabs
@@ -27,6 +31,19 @@ theme:
     - navigation.indexes
     - toc.follow
     - toc.integrate
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
 
 markdown_extensions:
   - abbr
