@@ -22,3 +22,9 @@ jobs:
       - name: Build and run Docker container
         run:
           ./test/test_dockerfile_main.sh "Dockerfile_redhat_${{ matrix.os_version }}" "tester:redhat-${{ matrix.os_version }}" -e SELECTED_SHELL="${{ matrix.shell }}"
+
+      - name: Upload new files logs as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: log_artifacts_redhat_${{ matrix.shell }}
+          path: logs/
