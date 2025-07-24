@@ -51,3 +51,15 @@ export PATH=\"\$GOROOT/bin:\$GOPATH/bin:\$PATH\""
     fi
 }
 
+Go::install_cli_tools() {
+	# install glow
+  	go install github.com/charmbracelet/glow@latest
+	# install gotop
+	go install github.com/xxxserxxx/gotop/v4/cmd/gotop@latest
+	# install hey
+	go install github.com/rakyll/hey@latest
+	# install lazydocker
+	go install github.com/jesseduffield/lazydocker@latest
+	# install age
+  	go install filippo.io/age/cmd/age@latest
+}

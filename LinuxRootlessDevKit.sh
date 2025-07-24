@@ -60,6 +60,7 @@ LinuxRootlessDevKit::install()
   source "${PROJECT_TOP_DIR}/src/golang/go_install.sh"
   Go::download "1.24.3"
   Go::install "1.24.3"
+  Go::install_cli_tools
 }
 
 LinuxRootlessDevKit::verify_installation()
