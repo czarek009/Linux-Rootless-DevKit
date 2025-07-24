@@ -5,7 +5,9 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_TOP_DIR="${SCRIPT_DIR}"
 ENV_CONFIGURATOR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/src/envConfigurator" && pwd)/envConfigurator.sh"
+ENV_VARIABLES="$(cd "$(dirname "${BASH_SOURCE[0]}")/src" && pwd)/env_variables.sh"
 source "${ENV_CONFIGURATOR_PATH}"
+source "${ENV_VARIABLES}"
 
 CONFIG_SETUP_PATH="${PROJECT_TOP_DIR}/config_setup.sh"
 if [[ -f "${CONFIG_SETUP_PATH}" ]]; then
@@ -17,21 +19,16 @@ fi
 # Run the install configuration setup script
 CONFIG_FILE="$1"
 if [[ "$CONFIG_FILE" == "" ]]; then
-    CONFIG_FILE="generated_config.json"
-    Logger::log_warning "No config file path provided. Using default: $CONFIG_FILE"
+    CONFIG_FILE="$SETTINGS_USER_YAML"
 fi
-EnvConfigurator::create_file_if_not_exists "$CONFIG_FILE"
+EnvConfigurator::create_file_if_not_exists "$SETTINGS_USER_YAML"
 Configurator::get_initial_config
-
-# Check if the config file exists
-if [ ! -f "$CONFIG_FILE" ]; then
-    Logger::log_error "Config file not found at '$CONFIG_FILE'"
-    exit 1
-fi
+Configurator::convert_yaml_to_settings_user
+Configurator::generate_settings
+source "${SETTINGS_FILE}"
 
 # Read a chosen shell from the config file
-SHELL_CHOICE=$(jq -r '.shell.name' "$CONFIG_FILE")
-
+SHELL_CHOICE="$ROOTLESS_CONFIG_SHELL_NAME"
 # --- Apply Shell Setup ---
 
 # Parameter for setting shell config file that will be used by a user (bashrc/zshrc)
@@ -56,12 +53,12 @@ if [[ "$SHELL_CHOICE" == "zsh" ]]; then
     EnvConfigurator::create_dir_if_not_exists "$SRC_DIR"
 
     # Read Zsh customizations from config
-    ZSH_INSTALL_OH_MY_ZSH=$(jq -r '.shell.install_oh_my' "$CONFIG_FILE")
-    ZSH_PLUGINS=$(jq -r '.shell.plugins' "$CONFIG_FILE")
-    ZSH_FONTS=$(jq -r '.shell.fonts' "$CONFIG_FILE")
-    ZSH_THEME=$(jq -r '.shell.theme' "$CONFIG_FILE")
-    ZSH_ALIASES=$(jq -r '.shell.aliases' "$CONFIG_FILE")
-    ZSH_INSTALL_VERSION=$(jq -r '.shell.install_version' "$CONFIG_FILE")
+    ZSH_INSTALL_OH_MY_ZSH="$ROOTLESS_CONFIG_SHELL_INSTALL_OH_MY"
+    ZSH_PLUGINS="$ROOTLESS_CONFIG_OH_MY_PLUGINS"
+    ZSH_FONTS="$ROOTLESS_CONFIG_OH_MY_FONTS"
+    ZSH_THEME="$ROOTLESS_CONFIG_OH_MY_THEME"
+    ZSH_ALIASES="$ROOTLESS_CONFIG_OH_MY_ALIASES"
+    ZSH_INSTALL_VERSION="$ROOTLESS_CONFIG_ZSH_VERSION"
     
     # Install base Zsh + oh-my-zsh
     Zsh::install_with_config "$ZSH_INSTALL_OH_MY_ZSH" "$ZSH_PLUGINS" "$ZSH_FONTS" "$ZSH_THEME" "$ZSH_ALIASES" "$ZSH_INSTALL_VERSION"

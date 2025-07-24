@@ -1,30 +1,43 @@
-shell: zsh
-oh_my_x_install: y
-zsh:
-  plugins: y
-  fonts: y
-  theme: y
-  aliases: y
-rust_install: y
-rust_tools:
-  zoxide:
-    install: y
-  git-delta:
-    install: y
-  atuin:
-    install: y
-  procs:
-    install: y
-  du-dust:
-    install: y
-  ripgrep:
-    install: y
-  tealdeer:
-    install: y
-  tokei:
-    install: y
-  gitui:
-    install: y
-  eza:
-    install: y
-go_install: y
+shell:
+    name: bash
+    install_version: latest
+    install_oh_my: y
+    plugins: y
+    fonts: y
+    theme: y
+    aliases: y
+install_rust: y
+rust_tools: 
+    zoxide: 
+        install: y 
+        version: 0.9.8
+    git-delta: 
+        install: y 
+        version: 0.18.2
+    atuin: 
+        install: y 
+        version: 18.6.1
+    procs: 
+        install: y 
+        version: 0.14.10
+    du-dust: 
+        install: y 
+        version: 1.2.1
+    ripgrep: 
+        install: y 
+        version: 14.1.1
+    tealdeer: 
+        install: y 
+        version: 1.7.2
+    tokei: 
+        install: y 
+        version: 12.1.2
+    gitui: 
+        install: y 
+        version: 0.27.0
+    eza: 
+        install: y 
+        version: 0.21.3
+install_go: y
+go_version: latest
+

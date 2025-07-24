@@ -23,6 +23,8 @@ EnvConfigurator::test
 Logger::log_info "ℹ️ Running logger test sequence..."
 TEST_LOG_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )/src/logger/logs"
 source "./src/logger/test_logger.sh"
+rm -rf "$TEST_LOG_DIR"
+EnvConfigurator::create_dir_if_not_exists "$TEST_LOG_DIR"
 set +e
 Logger::test
 set -e
@@ -62,13 +64,18 @@ EnvConfigurator::remove_dir_if_exists "$TEST_LOG_DIR" "y"
 
 EnvConfigurator::create_file_if_not_exists "${SHELLRC_PATH}"
 
-source ${PROJECT_TOP_DIR}/src/envConfigurator/envConfigurator.sh
+source "${PROJECT_TOP_DIR}/src/envConfigurator/envConfigurator.sh"
+source "./config_setup.sh"
 
-source ./LinuxRootlessDevKit.sh
-LinuxRootlessDevKit::configuration_setup
-LinuxRootlessDevKit::parse_config
-LinuxRootlessDevKit::generate_profile_settings "MASTER"
-LinuxRootlessDevKit::install
+Configurator::get_initial_config
+Configurator::convert_yaml_to_settings_user
+Configurator::generate_settings
+
+#source ./LinuxRootlessDevKit.sh
+# LinuxRootlessDevKit::configuration_setup
+# LinuxRootlessDevKit::parse_config
+# LinuxRootlessDevKit::generate_profile_settings "MASTER"
+# LinuxRootlessDevKit::install
 # LinuxRootlessDevKit::verify_installation
 # LinuxRootlessDevKit::uninstall
 # LinuxRootlessDevKit::verify_uninstallation

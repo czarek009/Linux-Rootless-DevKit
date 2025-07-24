@@ -57,7 +57,7 @@ LinuxRootlessDevKit::install()
       exit 1
   fi
   # Install rust with shell config file as an argument
-  if [["${ROOTLESS_CONFIG_RUST_INSTALL}" == y]]; then
+  if [[ "${ROOTLESS_CONFIG_RUST_INSTALL}" == "y" ]]; then
     Rust::install "${SHELLRC_PATH}" "${ROOTLESS_CONFIG_MASTER_RUST_VERSION}" || exit 1
     source "${SHELLRC_PATH}"
   fi
@@ -493,7 +493,7 @@ LinuxRootlessDevKit::generate_profile_settings() {
 
             # Strip CHOSEN_PROFILE from var name (keep ROOTLESS_CONFIG_*)
             local new_line
-            new_line=$(echo "$line" | sed "s/^ROOTLESS_CONFIG_${CHOSEN_PROFILE}_/ROOTLESS_CONFIG_/")
+            new_line="${line//ROOTLESS_CONFIG_${CHOSEN_PROFILE}_/ROOTLESS_CONFIG_}"
             EnvConfigurator::_write "$SETTINGS_PATH" "$new_line"
         fi
     done < "$SETTINGS_SOURCE_FILE"
