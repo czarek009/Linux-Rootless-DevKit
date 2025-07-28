@@ -8,6 +8,8 @@ LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../logger" && pwd)/script_logg
 source "$LOGGER_PATH"
 
 Go::remove_dirs() {
+    Logger::log_info "Cleaning Go modules cache"
+    go clean -modcache
     Logger::log_info "Removing Go directories"
     EnvConfigurator::remove_dir_if_exists "${HOME}/.local/go" "y"
     EnvConfigurator::remove_dir_if_exists "${HOME}/go" "y"
@@ -24,4 +26,9 @@ export GOROOT=\"${HOME}/.local/go\"
 export GOPATH=\"${HOME}/go\"
 export PATH=\"\$GOROOT/bin:\$GOPATH/bin:\$PATH\""
     Logger::log_info "Go environment lines removed from ${profile_file}"
+}
+
+Go::uninstall::main() {
+	Go::remove_dirs
+	Go::clean_bashrc	
 }
