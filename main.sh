@@ -82,4 +82,3 @@ find "$HOME" -type d \( -path "$HOME/.cache" -o -path "$HOME/.var" \) -prune -o 
 -type f \( -newermt "$START_TIME" -o -newerct "$START_TIME" \) -print \
 > /workspace/logs/new_modified_home_files_after_install_unistall_"${SELECTED_SHELL}".txt
 wc -l < /workspace/logs/new_modified_home_files_after_install_unistall_"${SELECTED_SHELL}".txt
-
