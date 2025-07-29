@@ -7,12 +7,13 @@ function Test::Docker::run_test()
 {
     local dockerfile_path="${1}"
     local docker_tag="${2}"
-
+    mkdir -p logs
+    chmod 777 logs
     shift 2
     local docker_arguments=("$@")
 
     DOCKER_BUILDKIT=1 docker build --no-cache --file "${dockerfile_path}" --tag "${docker_tag}" "${PROJECT_TOP_DIR}" || return 1
-    docker run "${docker_arguments[@]}" --rm "${docker_tag}" || return 1
+    docker run "${docker_arguments[@]}" --rm -v "$PWD/logs:/workspace/logs" "${docker_tag}" || return 1
     docker image rm "${docker_tag}" || return 1
 
     return 0

@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 set -e
 
-# GLOBAL library: env_variables and  envConfigrautor
+START_TIME=$(date +"%Y-%m-%d %H:%M:%S")
+# GLOBAL PATHS FOR ENTIRE PROJECT
 # Parameter for setting shell config file that will be used by a user (bashrc/zshrc)
 # TODO: Needs to be modifiable by the initial script configuration.
 
 ENV_PATHS_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/src/env_variables.sh"
 source "${ENV_PATHS_LIB}"
+# ENVCONFIGURATOR_DIR_PATH="$( cd -- "$(dirname "${BASH_SOURCE[0]}")/src/envConfigurator" >/dev/null 2>&1 || exit ; pwd -P )"
+# source "$ENVCONFIGURATOR_DIR_PATH/envConfigurator.sh"
 ENV_CONFIGURATOR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/src/envConfigurator/envConfigurator.sh"
 source "${ENV_CONFIGURATOR_PATH}"
 LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/src/logger" && pwd)/script_logger.sh"
@@ -14,14 +17,16 @@ source "$LOGGER_PATH"
 
 # Run envConfigurator test sequence:
 Logger::log_info "ℹ️ Running envConfigurator test sequence..."
-bash ./src/envConfigurator/test_envConfigurator.sh
-wait
+source "./src/envConfigurator/test_envConfigurator.sh"
+EnvConfigurator::test
 
 # Run logger test sequence:
 Logger::log_info "ℹ️ Running logger test sequence..."
 TEST_LOG_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )/src/logger/logs"
-bash ./src/logger/test_logger.sh
-wait
+source "./src/logger/test_logger.sh"
+set +e
+Logger::test
+set -e
 
 # Verify logger results:
 logger_check_str()
@@ -44,6 +49,7 @@ logger_check_str()
     exit 1
   fi
 }
+
 logger_check_str "test_logger" "Starting logger test"
 logger_check_str "test_logger" "This is a warning message"
 logger_check_str "test_logger" "This is an error message"
@@ -61,3 +67,18 @@ source ./LinuxRootlessDevKit.sh
 
 LinuxRootlessDevKit::install "${SELECTED_SHELL}"
 LinuxRootlessDevKit::verify_installation "${SELECTED_SHELL}"
+
+Logger::log_info "ℹ️ Files created or modified in $HOME after install started:"
+find "$HOME" -type d \( -path "$HOME/.cache" -o -path "$HOME/.var" \) -prune -o \
+-type f \( -newermt "$START_TIME" -o -newerct "$START_TIME" \) -print \
+> /workspace/logs/new_modified_home_files_after_install_"${SELECTED_SHELL}".txt
+wc -l < /workspace/logs/new_modified_home_files_after_install_"${SELECTED_SHELL}".txt
+
+LinuxRootlessDevKit::uninstall "${SELECTED_SHELL}"
+LinuxRootlessDevKit::verify_uninstallation "${SELECTED_SHELL}"
+
+Logger::log_info "ℹ️Files created or modified in $HOME after install and uninstall:"
+find "$HOME" -type d \( -path "$HOME/.cache" -o -path "$HOME/.var" \) -prune -o \
+-type f \( -newermt "$START_TIME" -o -newerct "$START_TIME" \) -print \
+> /workspace/logs/new_modified_home_files_after_install_unistall_"${SELECTED_SHELL}".txt
+wc -l < /workspace/logs/new_modified_home_files_after_install_unistall_"${SELECTED_SHELL}".txt

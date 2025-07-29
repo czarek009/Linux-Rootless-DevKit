@@ -16,9 +16,15 @@ LinuxRootlessDevKit::install()
   elif [[ "$1" == "zsh" ]]; then
     ################### ZSH ###################
     # Install zsh
-    bash ./src/zsh/zsh_install.sh
+    source "${PROJECT_TOP_DIR}/src/zsh/zsh_install.sh"
+    Zsh::install
+    Zsh::install_plugins
+    Zsh::install_fonts
+    Zsh::install_theme
+    Zsh::configure
+    Zsh::set_aliases
+    Zsh::verify_installation
     export PATH="$HOME/.local/bin:$PATH"
-    source "$HOME/.bashrc"
   else
     Logger::log_error "Error: Unsupported shell '$1'. Use 'bash' or 'zsh'." >&2
     exit 1
@@ -51,7 +57,10 @@ LinuxRootlessDevKit::install()
 
   ### GO ###
   # Install Go
-  bash ./src/golang/go_install.sh
+  source "${PROJECT_TOP_DIR}/src/golang/go_install.sh"
+  Go::download "1.24.3"
+  Go::install "1.24.3"
+  Go::install_cli_tools
 }
 
 LinuxRootlessDevKit::verify_installation()
@@ -88,6 +97,7 @@ LinuxRootlessDevKit::verify_installation()
   # Verify installation
   if command -v rustc >/dev/null 2>&1; then
     rustc --version
+    Logger::log_success "✅ rust successfully installed."
   else
     Logger::log_error "❌ rustc not found after install."
     exit 1
@@ -101,6 +111,7 @@ LinuxRootlessDevKit::verify_installation()
   # Verify Go installation
   if command -v go >/dev/null 2>&1; then
     go version
+    Logger::log_success "✅ Go successfully installed."
   else
     Logger::log_error "❌ Go not found after install."
     exit 1
@@ -125,8 +136,8 @@ LinuxRootlessDevKit::uninstall()
   elif [[ "$1" == "zsh" ]]; then
     ################### ZSH ###################
     # Uninstall zsh
-    bash ./src/zsh/zsh_uninstall.sh
-    source "$HOME/.bashrc"
+    source "${PROJECT_TOP_DIR}/src/zsh/zsh_uninstall.sh"
+    Zsh::uninstall
   else
     Logger::log_error "Error: Unsupported shell '$1'. Use 'bash' or 'zsh'." >&2
     exit 1
@@ -158,7 +169,9 @@ LinuxRootlessDevKit::uninstall()
 
   ### GO ###
   # Uninstall Go
-  bash ./src/golang/go_uninstall.sh
+  source "${PROJECT_TOP_DIR}/src/golang/go_uninstall.sh"
+  Go::remove_dirs
+  Go::clean_bashrc
 }
 
 LinuxRootlessDevKit::verify_uninstallation()

@@ -7,7 +7,7 @@ source "${ENV_CONFIGURATOR_PATH}"
 LOGGER_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../logger" && pwd)/script_logger.sh"
 source "$LOGGER_PATH"
 
-download() {
+Go::download() {
 	local go_version="${1}"
 	local go_tarball="go${go_version}.linux-amd64.tar.gz"
 
@@ -15,7 +15,7 @@ download() {
 	curl -LO "https://go.dev/dl/${go_tarball}" || { echo "Download failed"; exit 1;}
 }
 
-install() {
+Go::install() {
     local go_version="${1}"
     local go_tarball="go${go_version}.linux-amd64.tar.gz"
     local install_dir="${HOME}/.local"
@@ -51,18 +51,15 @@ export PATH=\"\$GOROOT/bin:\$GOPATH/bin:\$PATH\""
     fi
 }
 
-main() {
-	local version="$1"
-	download "${version}"
-	install "${version}"
+Go::install_cli_tools() {
+	# install glow
+  	go install github.com/charmbracelet/glow@latest
+	# install gotop
+	go install github.com/xxxserxxx/gotop/v4/cmd/gotop@latest
+	# install hey
+	go install github.com/rakyll/hey@latest
+	# install lazydocker
+	go install github.com/jesseduffield/lazydocker@latest
+	# install age
+  	go install filippo.io/age/cmd/age@latest
 }
-
-# Run main only if script is executed directly
-# Usage : ./golang/go_install.sh <go_version> (default 1.24.3)
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-	if [[ $# -lt 1 ]]; then
-		main "1.24.3"
-		exit 0
-	fi
-	main "$@"
-fi
